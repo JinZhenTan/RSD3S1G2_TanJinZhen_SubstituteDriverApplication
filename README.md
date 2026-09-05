@@ -1,7 +1,7 @@
 This is a Assignment for BMIT2073 Mobile Application Development from TAR-UMT Penang Branch, RSD3S1.
 
 
-**Account can be use **
+**Account can be use in this project**
 
 Normal User :
 
