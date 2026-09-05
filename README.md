@@ -1,8 +1,9 @@
 This is a Assignment for BMIT2073 Mobile Application Development from TAR-UMT Penang Branch, RSD3S1.
 -----------------------------------------------------------------------------------------------------------------
 
-Please run "flutter pub get" if there is red underline in the project.
+**Please run "flutter pub get" if there is red underline in the project.**
 
+-----------------------------------------------------------------------------------------------------------------
 **Account can be use in this project**
 
 Normal User :
