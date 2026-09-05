@@ -10,13 +10,6 @@ import '../../account/providers/preferences_provider.dart';
 import '../../booking/providers/booking_provider.dart';
 import '../providers/weather_provider.dart';
 
-// Module 2 - Safe-route suggestion. Compares OSRM's default route for the
-// active booking against an alternative that stays further from the flagged
-// hazard coordinates, and offers to apply it.
-//
-// Simplification documented: a "real" implementation would
-// route around a hazard polygon; here we just pick whichever OSRM alternative
-// keeps the greatest clearance from the hazard points.
 class SafeRouteCard extends StatefulWidget {
   const SafeRouteCard({super.key});
 
@@ -57,7 +50,6 @@ class _SafeRouteCardState extends State<SafeRouteCard> {
       _computing = false;
     });
 
-    // Device preference: apply the safer route without asking.
     if (context.read<PreferencesProvider>().autoSafeReroute && !_applied) {
       context.read<BookingProvider>().applySafeRoute(safe);
       setState(() => _applied = true);

@@ -24,8 +24,6 @@ import 'receipts_screen.dart';
 import 'safety_preferences_screen.dart';
 import 'vehicle_details_screen.dart';
 
-// Module 4 - Profile tab. Navy hero with the profile row, then grouped menu
-// links to every account sub-page, and Sign out.
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
@@ -38,9 +36,6 @@ class ProfileScreen extends StatelessWidget {
     final name = profile?.name ?? auth.session?.user.email ?? 'Guest';
     final role = profile?.role ?? UserRole.user;
 
-    // The hero line under the name is just the account role - the rating
-    // (drivers/passengers) has its own place (Earnings / trip history), not
-    // here.
     String roleSubtitle;
     switch (role) {
       case UserRole.driver:
@@ -127,9 +122,6 @@ class ProfileScreen extends StatelessWidget {
           ),
           _GroupLabel('Account'),
           _MenuGroup(children: [
-            // Drivers and service partners get paid, not billed - "Payment
-            // methods" becomes a salary + per-job/per-trip earnings
-            // breakdown instead (the owner pays for the service, not them).
             if (role == UserRole.driver)
               _MenuItem(
                 icon: Icons.payments_outlined,
@@ -155,8 +147,6 @@ class ProfileScreen extends StatelessWidget {
                 onTap: () => _exportDriverEarnings(context),
               )
             else if (role == UserRole.serviceStaff)
-              // The service partner's own work history (jobs they've
-              // accepted) - not receipts, they don't get paid through here.
               _MenuItem(
                 icon: Icons.history,
                 label: 'Activity',
@@ -168,8 +158,6 @@ class ProfileScreen extends StatelessWidget {
                 label: 'Activity & receipts',
                 onTap: () => _push(context, const ReceiptsScreen()),
               ),
-            // A substitute driver drives the passenger's car and has no
-            // vehicle of their own, so this is a passenger-only page.
             if (role == UserRole.user)
               _MenuItem(
                 icon: Icons.directions_car_outlined,
@@ -196,7 +184,6 @@ class ProfileScreen extends StatelessWidget {
               onTap: () => _push(context, const SafetyPreferencesScreen()),
             ),
           ]),
-          // No Help & Support group for the service partner role.
           if (role != UserRole.serviceStaff) ...[
             _GroupLabel('Support'),
             _MenuGroup(children: [
@@ -211,8 +198,6 @@ class ProfileScreen extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 30),
             child: OutlinedButton(
               onPressed: () {
-                // Clear every role's provider state before signing out so the
-                // next account that logs in on this device starts clean.
                 context.read<AccountProvider>().clear();
                 context.read<BookingProvider>().clear();
                 context.read<CarServiceProvider>().clear();
@@ -240,8 +225,6 @@ class ProfileScreen extends StatelessWidget {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
   }
 
-  // One-tap CSV/PDF export of the driver's current-month completed trips,
-  // without a detour through the Earnings screen - see EarningsExporter.
   Future<void> _exportDriverEarnings(BuildContext context) async {
     final driver = context.read<DriverProvider>();
     final messenger = ScaffoldMessenger.of(context);
@@ -289,7 +272,6 @@ class ProfileScreen extends StatelessWidget {
     }
   }
 
-  // Edit the name / phone on the profiles row.
   Future<void> _showEditSheet(BuildContext context, Profile profile) async {
     final nameController = TextEditingController(text: profile.name);
     final phoneController = TextEditingController(text: profile.phone ?? '');
@@ -392,7 +374,6 @@ class _MenuItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  // Optional value shown before the chevron (e.g. the current language).
   final String? trailingText;
 
   @override

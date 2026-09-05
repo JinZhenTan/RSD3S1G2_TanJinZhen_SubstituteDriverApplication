@@ -1,10 +1,4 @@
 // ignore_for_file: non_constant_identifier_names, constant_identifier_names
-// Practical 10 - Weather Web API.
-//
-// This class holds one 7-day-forecast record returned by the data.gov.my
-// weather API (Malaysian Meteorological Department). The field names are kept
-// as the JSON keys (snake_case) exactly like Practical 10 so fromJson can use a
-// map pattern.
 class Forecast {
   final String location_id;
   final String location_name;
@@ -30,8 +24,6 @@ class Forecast {
     required this.max_temp,
   });
 
-  // Practical 10 style: match the JSON shape with a map pattern, or throw a
-  // FormatException if a required key is missing / the wrong type.
   factory Forecast.fromJson(Map<String, dynamic> json) {
     return switch (json) {
       {

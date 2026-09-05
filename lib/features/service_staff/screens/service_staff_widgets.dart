@@ -15,15 +15,10 @@ import '../../../models/vehicle.dart';
 import '../../booking/screens/activity_chat_screen.dart';
 import '../providers/service_staff_provider.dart';
 
-// Shared building blocks for the two service-staff job screens
-// (ServicePickupScreen and ServiceCentreScreen) - a job's map, customer,
-// vehicle, centre and pickup-details cards, the photo strip, task row, and
-// status step row all look the same on both pages, so they live here once.
 
 Widget sectionTitle(String text) =>
     Tr(text, style: AppStyles.mono.copyWith(fontSize: 9.5));
 
-// ---- map -------------------------------------------------------------
 class JobMap extends StatelessWidget {
   const JobMap({super.key, required this.staff, required this.request});
 
@@ -44,8 +39,6 @@ class JobMap extends StatelessWidget {
     final phase = request.status;
     final goingToPickup = phase == CarServiceStatus.assigned;
     final goingToCentre = phase == CarServiceStatus.pickedUp;
-    // Covers both actually driving back and already having arrived - the
-    // route leg to draw is the same either way (centre -> owner).
     final onReturnLeg = phase == CarServiceStatus.returning ||
         phase == CarServiceStatus.returned;
 
@@ -102,7 +95,6 @@ class JobMap extends StatelessWidget {
   }
 }
 
-// ---- customer -------------------------------------------------------
 class CustomerCard extends StatelessWidget {
   const CustomerCard({super.key, required this.staff, required this.request});
 
@@ -195,7 +187,6 @@ class CustomerCard extends StatelessWidget {
   }
 }
 
-// ---- vehicle -------------------------------------------------------
 class VehicleCard extends StatelessWidget {
   const VehicleCard({super.key, required this.car});
 
@@ -267,7 +258,6 @@ class VehicleCard extends StatelessWidget {
   }
 }
 
-// ---- service centre ----------------------------------------------
 class CentreCard extends StatelessWidget {
   const CentreCard({super.key, required this.staff});
 
@@ -320,7 +310,6 @@ class CentreCard extends StatelessWidget {
   }
 }
 
-// ---- pickup details --------------------------------------------
 class PickupCard extends StatelessWidget {
   const PickupCard({super.key, required this.request});
 
@@ -360,8 +349,6 @@ class PickupCard extends StatelessWidget {
   }
 }
 
-// ---- generic label/value row (used for "estimated ready" on the centre
-// screen) --------------------------------------------------------------
 class InfoRow extends StatelessWidget {
   const InfoRow({
     super.key,
@@ -416,7 +403,6 @@ class InfoRow extends StatelessWidget {
   }
 }
 
-// ---- photo strip ---------------------------------------------
 class PhotoStrip extends StatelessWidget {
   const PhotoStrip({
     super.key,
@@ -485,7 +471,6 @@ class PhotoStrip extends StatelessWidget {
   }
 }
 
-// ---- task row ----------------------------------------------
 class TaskRow extends StatelessWidget {
   const TaskRow({
     super.key,
@@ -498,8 +483,6 @@ class TaskRow extends StatelessWidget {
   final ServiceTask task;
   final ValueChanged<bool> onToggle;
   final VoidCallback? onDelete;
-  // False once the service work is done (car is on its way back / returned) -
-  // the checklist stays visible for reference but is no longer tickable.
   final bool editable;
 
   @override
@@ -613,7 +596,6 @@ class TaskRow extends StatelessWidget {
       );
 }
 
-// ---- shared step row (also used by the owner's tracker) --------------
 class StepRow extends StatelessWidget {
   const StepRow({
     super.key,

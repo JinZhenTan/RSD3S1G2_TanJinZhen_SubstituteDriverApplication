@@ -7,21 +7,6 @@ import '../../models/forecast.dart';
 import '../../models/weather_alert.dart';
 import '../../models/weather_warning.dart';
 
-// Weather Web API service, written the Practical 10 way.
-//
-// Two data.gov.my endpoints feed the safety alerts:
-//   /weather/forecast  -> 7-day forecast (Practical 10). alertsFromForecast()
-//                         turns "rain / thunderstorm ahead" text into alerts.
-//   /weather/warning   -> MET Malaysia's live warning bulletins. These are the
-//                         real source of flood-risk, thunderstorm, strong-wind
-//                         and (rarely) landslide / road warnings.
-//                         alertsFromWarnings() classifies each bulletin by
-//                         keyword into a flood / road-closure / rain alert.
-//
-// data.gov.my has no dedicated flood-gauge or road-closure feed, so a
-// continuous-/heavy-rain warning (which MET issues precisely because it can
-// cause flooding) is what surfaces as a flood alert. If both endpoints are
-// unreachable a small seeded set is used so the demo still runs offline.
 class WeatherService {
   static final WeatherService _instance = WeatherService._internal();
   factory WeatherService() => _instance;
@@ -30,7 +15,6 @@ class WeatherService {
   static const String forecastUrl = 'https://api.data.gov.my/weather/forecast';
   static const String warningUrl = 'https://api.data.gov.my/weather/warning';
 
-  // Each Malaysian state has a location id with an 'St' prefix (Practical 10).
   static const Map<String, String> states = {
     'St001': 'Perlis',
     'St002': 'Kedah',
@@ -50,9 +34,6 @@ class WeatherService {
     'St503': 'WP Labuan',
   };
 
-  // The prototype scenario is set in George Town, so Pulau Pinang is the
-  // default state. Rough state centres are the hazard coordinates the
-  // safe-route logic routes around when an alert names that state.
   static const String defaultLocationId = 'St003';
   static const Map<String, LatLng> _stateCentre = {
     'St001': LatLng(6.4400, 100.2000),
@@ -73,12 +54,9 @@ class WeatherService {
     'St503': LatLng(5.2800, 115.2400),
   };
 
-  // Short in-memory cache so the banner + feed + safe-route don't each hit the
-  // API (and to stay under the public endpoint's rate limit).
   List<WeatherAlert>? _cachedAlerts;
   DateTime? _cachedAt;
 
-  // ---- Practical 10 network request -------------------------------------
   Future<List<Forecast>> fetchForecast(String locationId) async {
     if (locationId.isEmpty) {
       return Future.value([]);
@@ -103,7 +81,6 @@ class WeatherService {
     }
   }
 
-  // ---- data.gov.my weather/warning --------------------------------------
   Future<List<WeatherWarning>> fetchWarnings() async {
     final url = Uri.parse(warningUrl);
     try {
@@ -122,7 +99,6 @@ class WeatherService {
     }
   }
 
-  // ---- Bridge: MET warnings -> flood / road-closure / rain alerts --------
   List<WeatherAlert> alertsFromWarnings(List<WeatherWarning> warnings) {
     final alerts = <WeatherAlert>[];
 
@@ -130,8 +106,6 @@ class WeatherService {
       if (!w.isActive) continue;
       final blob = w.blob;
 
-      // A driver doesn't care about a purely marine bulletin (rough seas /
-      // shipping) unless it also carries land-relevant weather.
       final landRelevant = _hasAny(blob, const [
         'thunderstorm',
         'ribut petir',
@@ -154,8 +128,6 @@ class WeatherService {
       ]);
       if (!landRelevant) continue;
 
-      // Flash-flood / flood wording, or "continuous rain" (the bulletin MET
-      // issues specifically because prolonged rain floods low-lying areas).
       final isFlood = _hasAny(blob, const [
         'flood',
         'banjir',
@@ -186,9 +158,6 @@ class WeatherService {
       final area = stateId == null ? 'Malaysia' : states[stateId]!;
       final title = w.title_en.isNotEmpty ? w.title_en : w.heading_en;
 
-      // heading_en is the concise official summary; text_en is a long
-      // multi-section bulletin (mostly marine boilerplate), so use the first
-      // sentence of it and fall back to the heading.
       final body = w.heading_en.isNotEmpty ? w.heading_en : _firstSentence(w.text_en);
       final description = w.instruction_en.isEmpty
           ? _tidy(body)
@@ -212,7 +181,6 @@ class WeatherService {
     return alerts;
   }
 
-  // ---- Bridge: forecast text -> "rain ahead" alerts ---------------------
   List<WeatherAlert> alertsFromForecast(List<Forecast> forecasts) {
     final alerts = <WeatherAlert>[];
     for (final f in forecasts.take(3)) {
@@ -251,8 +219,6 @@ class WeatherService {
     return alerts;
   }
 
-  // Merge the live warning + forecast alerts. The seeded set is only used when
-  // BOTH live sources fail (offline demo).
   Future<List<WeatherAlert>> fetchAlerts({bool force = false}) async {
     if (!force &&
         _cachedAlerts != null &&
@@ -282,7 +248,6 @@ class WeatherService {
       alerts.addAll(_seededAlerts());
     }
 
-    // De-dupe on type+title, most severe first.
     final seen = <String>{};
     final deduped =
         alerts.where((a) => seen.add('${a.type.name}|${a.title}')).toList()
@@ -293,7 +258,6 @@ class WeatherService {
     return deduped;
   }
 
-  // The single most important safety alert, for the shared weather banner.
   Future<WeatherAlert?> currentBannerAlert() async {
     final alerts = await fetchAlerts();
     for (final alert in alerts) {
@@ -302,9 +266,6 @@ class WeatherService {
     return null;
   }
 
-  // Keyword-based severity classification for forecast text. A real
-  // implementation would use a rainfall-amount threshold; the forecast
-  // endpoint only returns text, so we bucket on the words MetMalaysia uses.
   AlertSeverity classifySeverity(String text) {
     final t = text.toLowerCase().replaceAll('tiada hujan', '');
     const severeWords = [
@@ -327,8 +288,6 @@ class WeatherService {
     return AlertSeverity.info;
   }
 
-  // Warning severity from MET's category wording. Every bulletin is at least an
-  // advisory, so the floor is moderate.
   AlertSeverity _warningSeverity(String blob) {
     const severeWords = [
       'danger',
@@ -346,7 +305,6 @@ class WeatherService {
     return AlertSeverity.moderate;
   }
 
-  // Find the first Malaysian state named in a warning's text.
   String? _stateIdFromText(String blob) {
     for (final entry in states.entries) {
       final name = entry.value.toLowerCase().replaceAll('wp ', '');
@@ -368,11 +326,9 @@ class WeatherService {
     return end == -1 ? t : t.substring(0, end + 1);
   }
 
-  // Collapse the run-on ALL-CAPS bulletin text into something readable.
   String _tidy(String text) {
     var t = text.replaceAll(RegExp(r'\s+'), ' ').trim();
     if (t.length > 240) t = '${t.substring(0, 237)}...';
-    // If it is shouting, sentence-case it.
     if (t == t.toUpperCase() && t.length > 12) {
       t = t.toLowerCase();
       t = t[0].toUpperCase() + t.substring(1);
@@ -380,7 +336,6 @@ class WeatherService {
     return t;
   }
 
-  // Offline fallback, used only when both live endpoints are unreachable.
   List<WeatherAlert> _seededAlerts() {
     final now = DateTime.now();
     return [

@@ -4,36 +4,23 @@ import '../../../models/booking.dart';
 import '../../../models/route_result.dart';
 import '../../../models/weather_alert.dart';
 
-// One row in the fare summary (label + amount).
 class FareLine {
   final String label;
   final double amount;
   const FareLine(this.label, this.amount);
 }
 
-// The full fare breakdown for a trip.
 class FareBreakdown {
   final List<FareLine> lines;
   final double total;
   const FareBreakdown(this.lines, this.total);
 }
 
-// Fare-calculation logic for the "Find a Driver" service for the assignment.
-//
-// Rules:
-//   1. The flagfall covers the first 10 km of the trip.
-//   2. Every km beyond 10 km is charged at the tier's per-km rate.
-//   3. A flat "wet-weather routing buffer" is added when an active weather
-//      alert lies close to the planned route.
-//
-// The hourly tier is billed differently: a flat rate per full hour of
-// estimated travel time, with no distance component.
 class FareCalculator {
   static const double freeKm = 10.0;
   static const double wetWeatherBuffer = 2.00;
   static const double hazardProximityMetres = 1500;
 
-  // True when any flagged hazard is within ~1.5 km of the route line.
   static bool routeHitsHazard(
     List<LatLng> routePoints,
     List<WeatherAlert> alerts,
@@ -66,7 +53,6 @@ class FareCalculator {
     final wet = routeHitsHazard(route.points, activeAlerts);
 
     if (tier.name == 'hourly') {
-      // Round the estimated travel time up to the next full hour.
       final hours = (route.durationMinutes / 60).ceil().clamp(1, 24);
       final base = tier.flagfall * hours;
       lines.add(FareLine(

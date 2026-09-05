@@ -8,11 +8,6 @@ import '../../../core/widgets/tr.dart';
 import '../../../models/car_service_request.dart';
 import '../providers/car_service_provider.dart';
 
-// Module 3 - Service type picker. A booking can cover more than one service
-// in the same visit (e.g. oil change + tyre rotation), so this is a
-// multi-select checklist rather than tap-one-and-pop - the fixed price at
-// the bottom sums every ticked type's price (see CarServiceProvider.estimateMin,
-// a fixed total despite the name - see CarServiceType.price).
 class SelectServiceTypeScreen extends StatelessWidget {
   const SelectServiceTypeScreen({super.key});
 

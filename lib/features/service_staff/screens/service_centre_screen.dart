@@ -11,15 +11,6 @@ import '../../../models/service_task.dart';
 import '../providers/service_staff_provider.dart';
 import 'service_staff_widgets.dart';
 
-// Service staff role - PAGE 2 of 3: the service process, opened from the
-// "Service" button on a job's card in the Requests tab (staff's home) once
-// the car has reached the centre.
-//   - tick each task off, add + price any extra work (owner approves)
-//   - set an estimated ready time
-//   - tap "Service complete - send car back" once done, which hands the job
-//     over to PAGE 3 (ServiceReturnScreen) to actually drive the car home and
-//     photograph its condition on return - this page has nothing to do with
-//     the return trip itself, only the workshop side of things.
 class ServiceCentreScreen extends StatefulWidget {
   const ServiceCentreScreen({super.key});
 
@@ -49,7 +40,6 @@ class _ServiceCentreScreenState extends State<ServiceCentreScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
-  // ---- ready-by ------------------------------------------------------
   Future<void> _editReadyBy() async {
     final r = _staff.active;
     if (r == null) return;
@@ -71,7 +61,6 @@ class _ServiceCentreScreenState extends State<ServiceCentreScreen> {
     );
   }
 
-  // ---- add extra work ---------------------------------------------
   Future<void> _addExtraTask() async {
     final titleC = TextEditingController();
     final detailC = TextEditingController();
@@ -126,14 +115,11 @@ class _ServiceCentreScreenState extends State<ServiceCentreScreen> {
     _toast('Sent to the owner for approval');
   }
 
-  // ---- advance ---------------------------------------------------
   Future<void> _advance() async {
     setState(() => _busy = true);
     await _staff.advanceStatus();
     if (!mounted) return;
     setState(() => _busy = false);
-    // Service work is done - back to the Requests tab, where the "Return"
-    // button is now unlocked.
     if (_staff.active?.status == CarServiceStatus.returning) {
       _toast('Marked as ready - the car is on its way back');
       Navigator.of(context).pop();
@@ -149,9 +135,6 @@ class _ServiceCentreScreenState extends State<ServiceCentreScreen> {
       return const Scaffold(body: Center(child: Tr('No job selected')));
     }
 
-    // Once the car has left the centre (or is already back), the service
-    // work itself is done - this page becomes a read-only summary and the
-    // checklist can no longer be edited.
     final serviceDone = r.returningAt != null;
 
     return Scaffold(

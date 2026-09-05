@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'tr.dart';
 
-// The navy "top-header" block used at the top of most non-tab screens in the
-// prototype: an optional back chevron, a mono eyebrow line, and a Sora title.
 class ScreenHeader extends StatelessWidget {
   const ScreenHeader({
     super.key,

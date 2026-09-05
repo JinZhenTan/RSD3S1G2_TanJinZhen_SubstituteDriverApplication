@@ -10,8 +10,6 @@ class AppTab {
   final IconData icon;
 }
 
-// Floating pill-style bottom nav, ported from .tabbar / .tab / .tab.active
-// in mobile prototype .html (rounded card, active tab gets a blue-50 pill).
 class AppBottomNavBar extends StatelessWidget {
   const AppBottomNavBar({
     super.key,
@@ -26,8 +24,6 @@ class AppBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Add the device's system nav-bar/gesture-bar inset so the floating pill
-    // never sits under the phone's back/home/recents controls.
     final bottomInset = MediaQuery.of(context).padding.bottom;
     return Padding(
       padding: EdgeInsets.fromLTRB(14, 6, 14, 18 + bottomInset),

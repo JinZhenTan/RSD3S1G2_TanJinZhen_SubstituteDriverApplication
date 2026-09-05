@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// Colors ported from :root CSS variables in mobile prototype .html
 class AppColors {
   static const navy = Color(0xFF0B1730);
   static const navy2 = Color(0xFF132247);
@@ -26,8 +25,6 @@ class AppColors {
   static const heroAccent = Color(0xFF7FB0FF);
 }
 
-// Reusable visual pieces ported from the prototype so screens stay consistent
-// without repeating the same BoxDecoration / TextStyle everywhere.
 class AppStyles {
   static TextStyle get mono => GoogleFonts.jetBrainsMono(
     fontSize: 10,

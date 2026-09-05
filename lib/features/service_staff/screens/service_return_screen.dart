@@ -14,14 +14,6 @@ import '../../../models/service_photo.dart';
 import '../providers/service_staff_provider.dart';
 import 'service_staff_widgets.dart';
 
-// Service staff role - PAGE 3 of 3: sending the car back, opened from the
-// "Return" button on a job's card in the Requests tab once the service work
-// is done. The destination is never picked by the staff - it's always the
-// same address the car was collected from (request.pickupAddress /
-// pickupLat / pickupLng), so there is nothing to set here, only to drive.
-//   - take return photos documenting the car's condition on hand-back
-//   - tap "Mark returned" once it's actually back with the owner - after
-//     that the owner reviews the final cost and pays
 class ServiceReturnScreen extends StatefulWidget {
   const ServiceReturnScreen({super.key});
 
@@ -52,7 +44,6 @@ class _ServiceReturnScreenState extends State<ServiceReturnScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
-  // ---- photos ---------------------------------------------------
   Future<void> _addPhoto() async {
     final source = await showModalBottomSheet<String>(
       context: context,
@@ -230,9 +221,6 @@ class _ServiceReturnScreenState extends State<ServiceReturnScreen> {
   }
 }
 
-// ---- return destination -------------------------------------------
-// Always the same address the car was collected from - never chosen by the
-// staff, just shown for reference.
 class _ReturnDestinationCard extends StatelessWidget {
   const _ReturnDestinationCard({required this.request});
 

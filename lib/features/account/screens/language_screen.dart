@@ -6,12 +6,6 @@ import '../../../core/widgets/screen_header.dart';
 import '../../../core/widgets/tr.dart';
 import '../providers/preferences_provider.dart';
 
-// Module 4 - Language. A device-level preference held in PreferencesProvider
-// and stored with shared_preferences (like the user_profile practical). Every
-// UI string is written in English; picking another language machine-translates
-// the interface (PreferencesProvider.t via TranslationService), cached so it
-// only downloads once. Opening this screen pre-warms every language in the
-// background, so tapping a row switches instantly.
 class LanguageScreen extends StatefulWidget {
   const LanguageScreen({super.key});
 
@@ -20,7 +14,6 @@ class LanguageScreen extends StatefulWidget {
 }
 
 class _LanguageScreenState extends State<LanguageScreen> {
-  // name -> native description
   static const Map<String, String> descriptions = {
     'English': 'Default',
     'Bahasa Malaysia': 'Bahasa Melayu',

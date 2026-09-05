@@ -14,9 +14,6 @@ import '../providers/booking_provider.dart';
 import 'trip_detail_screen.dart';
 import 'trip_tracking_screen.dart';
 
-// Module 1 - Activity tab (view-activity in the prototype). Trip history +
-// driver chats, plus car-service jobs, with an All / In progress / Completed
-// filter.
 class ActivityScreen extends StatefulWidget {
   const ActivityScreen({super.key});
 
@@ -25,7 +22,7 @@ class ActivityScreen extends StatefulWidget {
 }
 
 class _ActivityScreenState extends State<ActivityScreen> {
-  int _filter = 0; // 0 = all, 1 = in progress, 2 = completed
+  int _filter = 0;
 
   @override
   void initState() {
@@ -181,16 +178,8 @@ class _BookingRow extends StatelessWidget {
 
   final Booking booking;
 
-  // A booking row can belong to the signed-in account as either the
-  // passenger or (if they also drove it) the driver - see loadActivity's
-  // comment. Needed so UnreadDot checks messages from the *other* side.
   String? get _myUserId => supabase.auth.currentUser?.id;
 
-  // A finished trip is a static, read-only summary. A trip still in progress
-  // opens the live Trip Tracking screen instead - the map, ETA, and (once the
-  // driver reports arrival) the "Confirm trip completed" button all need the
-  // booking to keep updating live, which the read-only detail screen does not
-  // do.
   Future<void> _open(BuildContext context) async {
     if (bookingIsHistory(booking.status)) {
       Navigator.of(context).push(

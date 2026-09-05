@@ -9,17 +9,12 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../models/receipt.dart';
 
-// Real CSV / PDF export of the user's receipts for the assignment.
-// CSV is written to a temp file and passed to the OS share sheet; the PDF is
-// built with the pdf package and shared with the printing package.
 class ReceiptExporter {
   static final DateFormat _dateFormat = DateFormat('yyyy-MM-dd HH:mm');
   static final NumberFormat _money =
       NumberFormat.currency(symbol: 'RM ', decimalDigits: 2);
 
   static Future<void> exportCsv(List<Receipt> receipts) async {
-    // Build the CSV text by hand: each field is wrapped in quotes and any
-    // embedded quote is doubled.
     final rows = <List<String>>[
       ['Reference', 'Date', 'Description', 'Amount (RM)'],
       for (final r in receipts)

@@ -16,9 +16,6 @@ const _tabs = [
   AppTab(label: 'Profile', icon: Icons.person_outline),
 ];
 
-// Signed-in app shell: bottom nav + the 4 top-level tab bodies, matching the
-// prototype's tabbar (view-home / view-activity / view-notification /
-// view-profile). Each tab keeps its state via IndexedStack.
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
 
@@ -32,7 +29,6 @@ class _AppShellState extends State<AppShell> {
   @override
   void initState() {
     super.initState();
-    // The profile is already loaded by AuthGate; pull the rest here.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<WeatherProvider>().refresh();
       context.read<BookingProvider>().loadActivity();

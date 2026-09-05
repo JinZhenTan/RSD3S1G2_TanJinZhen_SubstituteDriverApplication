@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'tr.dart';
 
-// The full-width blue "btn-primary" from the prototype, with a built-in
-// loading spinner so callers do not each re-implement it.
 class PrimaryButton extends StatelessWidget {
   const PrimaryButton({
     super.key,
@@ -49,7 +47,6 @@ class PrimaryButton extends StatelessWidget {
   }
 }
 
-// The outlined "btn-ghost" variant.
 class GhostButton extends StatelessWidget {
   const GhostButton({super.key, required this.label, required this.onPressed});
 

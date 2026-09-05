@@ -1,7 +1,5 @@
 import 'user_role.dart';
 
-// Model class for a row of the Supabase 'profiles' table.
-// profiles.id is the same id as the signed-in auth user.
 class Profile {
   final String id;
   final String name;
@@ -9,9 +7,6 @@ class Profile {
   final String? phone;
   final String? avatarUrl;
   final double rating;
-  // Driver-role payroll config for the Earnings screen (unused by other
-  // roles). Lives on profiles rather than a separate table since it's a
-  // single row per driver, same as rating.
   final double basicSalary;
   final double earningsDeductionRate;
 
@@ -53,6 +48,5 @@ class Profile {
     };
   }
 
-  // First letter of the name, used for the avatar badge.
   String get initial => name.isNotEmpty ? name[0].toUpperCase() : 'G';
 }

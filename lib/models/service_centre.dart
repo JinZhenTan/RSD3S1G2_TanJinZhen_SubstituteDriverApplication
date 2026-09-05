@@ -1,10 +1,5 @@
 import 'package:latlong2/latlong.dart';
 
-// Model class for a row of the Supabase 'service_centres' table (Module 3).
-//
-// A small seeded set of workshops. The service staff picks which centre a job
-// goes to when they accept it; both the staff map and the owner's Status
-// Tracker then show the centre pin and the leg to / from it.
 class ServiceCentre {
   final String id;
   final String name;

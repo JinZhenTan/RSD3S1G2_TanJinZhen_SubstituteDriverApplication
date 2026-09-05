@@ -1,6 +1,5 @@
 import 'package:latlong2/latlong.dart';
 
-// One address suggestion returned by the OSM Nominatim geocoding API.
 class Place {
   final String displayName;
   final LatLng position;
@@ -17,7 +16,6 @@ class Place {
     );
   }
 
-  // A shorter label. Nominatim display names can be very long.
   String get shortName {
     final parts = displayName.split(',');
     return parts.take(2).join(',').trim();

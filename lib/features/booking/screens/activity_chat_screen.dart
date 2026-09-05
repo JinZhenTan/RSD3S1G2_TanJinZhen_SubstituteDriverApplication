@@ -12,16 +12,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/tr.dart';
 import '../../../models/activity_message.dart';
 
-// Activity Chat. In-trip messaging backed by the Supabase `activity_messages`
-// table and delivered live with Supabase Realtime. Used from both sides:
-// the passenger's screens pass mySenderType 'user', the driver's screens pass
-// 'driver', so each side sees its own messages on the right.
-//
-// Messages are text or pictures. A picture comes from the camera (image_picker)
-// or from an image file on the device (file_picker opens the system Files
-// app). Either way the bytes are uploaded to the Supabase Storage 'chat-images'
-// bucket, then sent as a row with type = 'image' and image_url = the object's
-// public URL.
 enum _AttachSource { camera, files }
 
 class ActivityChatScreen extends StatefulWidget {
@@ -39,10 +29,7 @@ class ActivityChatScreen extends StatefulWidget {
   final String? serviceRequestId;
   final String title;
   final String driverName;
-  final String mySenderType; // 'user' or 'driver'
-  // True once the trip/service job this thread belongs to is history (see
-  // bookingIsHistory) - the composer is replaced with a "read only" notice so
-  // a finished trip can't collect new messages.
+  final String mySenderType;
   final bool readOnly;
 
   @override
@@ -74,7 +61,6 @@ class _ActivityChatScreenState extends State<ActivityChatScreen> {
         .eq(_threadColumn, _threadId)
         .order('created_at')
         .map((rows) => rows.map(ActivityMessage.fromJson).toList());
-    // Clears this thread's unread dot for this account.
     ChatReadService().markRead(
       bookingId: widget.bookingId,
       serviceRequestId: widget.serviceRequestId,
@@ -115,7 +101,6 @@ class _ActivityChatScreenState extends State<ActivityChatScreen> {
     }
   }
 
-  // Ask camera or device files, pick one image, upload it, then send the row.
   Future<void> _attachImage() async {
     final source = await showModalBottomSheet<_AttachSource>(
       context: context,
@@ -156,7 +141,6 @@ class _ActivityChatScreenState extends State<ActivityChatScreen> {
         bytes = await picked.readAsBytes();
         name = picked.name;
       } else {
-        // Opens the system Files app, filtered to image types.
         final file = await FilePicker.pickFile(
           type: FileType.custom,
           allowedExtensions: const [
@@ -472,7 +456,6 @@ class _ImageContent extends StatelessWidget {
   }
 }
 
-// Tap a picture bubble to see it full screen, pinch to zoom.
 class _ImageViewer extends StatelessWidget {
   const _ImageViewer({required this.url});
 
@@ -505,8 +488,6 @@ class _ImageViewer extends StatelessWidget {
   }
 }
 
-// Shown instead of _Composer once the trip is history - this thread is a
-// record of what was said, not somewhere new messages belong.
 class _ReadOnlyNotice extends StatelessWidget {
   const _ReadOnlyNotice();
 

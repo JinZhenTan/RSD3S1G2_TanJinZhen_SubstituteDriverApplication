@@ -1,8 +1,4 @@
 // ignore_for_file: non_constant_identifier_names, constant_identifier_names
-// Module 2 - one MET Malaysia warning bulletin from the data.gov.my
-// `weather/warning` endpoint. Unlike Forecast (Practical 10), several fields
-// here are nullable in the live feed (valid_from / valid_to / instruction),
-// so fromJson is lenient rather than a strict map pattern.
 class WeatherWarning {
   final String issued;
   final String title_en;
@@ -35,12 +31,9 @@ class WeatherWarning {
     );
   }
 
-  // Everything searchable, lower-cased, for keyword classification.
   String get blob =>
       '$title_en $heading_en $text_en $instruction_en'.toLowerCase();
 
-  // A warning with no valid_to is treated as open-ended; otherwise drop it once
-  // its window has passed.
   bool get isActive {
     final to = DateTime.tryParse(valid_to ?? '');
     if (to == null) return true;

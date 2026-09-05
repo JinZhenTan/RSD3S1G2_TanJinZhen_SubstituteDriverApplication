@@ -16,8 +16,6 @@ import 'trip_tracking_screen.dart';
 import '../../vehicle_services/screens/car_service_form_screen.dart';
 import '../../weather_safety/screens/weather_forecast_screen.dart';
 
-// Module 1 - Home tab. Navy hero with greeting + the shared weather banner,
-// a 2x2 grid of quick actions, and a "last booking" card.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({
     super.key,
@@ -27,21 +25,12 @@ class HomeScreen extends StatelessWidget {
     this.secondaryAction,
   });
 
-  // Lets the quick-action tiles jump to the Notification / Profile tabs that
-  // live in the shell's bottom nav (index 2 and 3).
   final void Function(int) onOpenTab;
 
-  // The first quick-action tile. Null in the passenger app (defaults to
-  // "Find a Driver"); the driver app passes an "Available bookings" action.
   final HomeAction? primaryAction;
 
-  // Car Service is a passenger-only feature - a substitute driver drives the
-  // passenger's car and has no vehicle to service. The driver app hides it.
   final bool showCarService;
 
-  // A second quick-action tile shown right after the primary one. Unused in
-  // the passenger app; the driver app passes an "Earnings" action so it does
-  // not have to dig into Profile to see how much they've made.
   final HomeAction? secondaryAction;
 
   @override
@@ -392,9 +381,6 @@ class _LastTripCard extends StatelessWidget {
     );
   }
 
-  // Same rule as the Activity tab's rows: a finished trip opens the static
-  // detail screen, one still in progress opens the live Trip Tracking screen
-  // so the map/ETA/confirm-completion button keep updating.
   Future<void> _open(BuildContext context, Booking last) async {
     if (bookingIsHistory(last.status)) {
       Navigator.of(context).push(

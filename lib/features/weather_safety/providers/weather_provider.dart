@@ -5,20 +5,15 @@ import '../../../core/services/weather_service.dart';
 import '../../../models/forecast.dart';
 import '../../../models/weather_alert.dart';
 
-// Module 2 state. Fetches the data.gov.my weather forecast (Practical 10 way),
-// exposes the 7-day forecast list for the Notification screen, and derives the
-// safety alerts / banner alert reused on Home and Trip Tracking.
 class WeatherProvider extends ChangeNotifier {
   final _service = WeatherService();
 
-  // ---- Safety alerts (banner + feed) ----
   List<WeatherAlert> alerts = [];
   WeatherAlert? bannerAlert;
   bool isLoading = false;
   String? errorMessage;
   DateTime? lastUpdated;
 
-  // ---- 7-day forecast (Practical 10) ----
   static const String _prefKey = 'weather_state_id';
   final Map<String, String> states = WeatherService.states;
   String selectedStateId = WeatherService.defaultLocationId;
@@ -58,8 +53,6 @@ class WeatherProvider extends ChangeNotifier {
     await ensureForecastLoaded();
   }
 
-  // Restore the last state the user picked (SharedPreferences) and load its
-  // 7-day forecast. Runs once - safe to call from several screens.
   Future<void> ensureForecastLoaded() async {
     if (_forecastInitStarted) return;
     _forecastInitStarted = true;
@@ -67,8 +60,6 @@ class WeatherProvider extends ChangeNotifier {
     await loadForecast(selectedStateId);
   }
 
-  // Practical 10: fetch the 7-day forecast for one state and remember the
-  // choice with SharedPreferences (the practical's TODO).
   Future<void> loadForecast(String locationId) async {
     selectedStateId = locationId;
     isForecastLoading = true;
@@ -109,7 +100,6 @@ class WeatherProvider extends ChangeNotifier {
     }
   }
 
-  // Trip updates raised by the booking flow show up in the same feed.
   void addLocalUpdate(WeatherAlert update) {
     alerts = [update, ...alerts];
     notifyListeners();

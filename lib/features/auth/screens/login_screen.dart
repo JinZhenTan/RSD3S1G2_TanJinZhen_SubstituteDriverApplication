@@ -33,8 +33,6 @@ class _LoginScreenState extends State<LoginScreen> {
       email: _emailController.text.trim(),
       password: _passwordController.text,
     );
-    // Navigation on success is handled by the root widget watching
-    // AuthProvider.isSignedIn - nothing to do here on success.
   }
 
   @override

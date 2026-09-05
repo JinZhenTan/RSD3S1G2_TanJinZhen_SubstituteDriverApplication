@@ -8,11 +8,6 @@ import '../../../models/payment_method.dart';
 import '../providers/account_provider.dart';
 import '../widgets/card_form_sheet.dart';
 
-// Module 4 - Payment methods. Cash and an e-wallet are always available and
-// always shown - there is nothing to set up for either, so there is no
-// "add payment method" flow. The card is the one type that needs real
-// details, so it always has an add/edit action; tap any row to make it the
-// default for a booking.
 class PaymentMethodsScreen extends StatelessWidget {
   const PaymentMethodsScreen({super.key});
 
@@ -138,8 +133,6 @@ class _PaymentRow extends StatelessWidget {
   });
 
   final PaymentMethod method;
-  // Only the card has these - cash and the e-wallet are fixed, permanent
-  // options with nothing to edit or remove.
   final VoidCallback? onEdit;
   final VoidCallback? onRemove;
 

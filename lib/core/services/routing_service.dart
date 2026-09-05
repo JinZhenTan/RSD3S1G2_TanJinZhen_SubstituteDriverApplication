@@ -6,9 +6,6 @@ import 'package:latlong2/latlong.dart';
 import '../../models/route_result.dart';
 import '../../models/weather_alert.dart';
 
-// Talks to the free OSRM public demo server for turn-by-turn routes and ETA.
-// It can be slow or rate-limited, so every call is wrapped in try / catch and
-// falls back to a straight line between the two points.
 class RoutingService {
   static final RoutingService _instance = RoutingService._internal();
   factory RoutingService() => _instance;
@@ -16,8 +13,6 @@ class RoutingService {
 
   static const String baseUrl = 'https://router.project-osrm.org';
 
-  // Fetches a driving route between two coordinates. The geometry is requested
-  // as GeoJSON so we get a list of [lng, lat] pairs for the map polyline.
   Future<RouteResult> route(LatLng from, LatLng to) async {
     final url = Uri.parse(
       '$baseUrl/route/v1/driving/'
@@ -43,9 +38,6 @@ class RoutingService {
     }
   }
 
-  // Safe-route suggestion for Module 2. This is a simplified stand-in for a
-  // real routing-around-hazards algorithm: we ask OSRM for alternative routes
-  // and pick the one whose polyline stays furthest from every flagged hazard.
   Future<RouteResult> safeRoute(
     LatLng from,
     LatLng to,
@@ -104,7 +96,6 @@ class RoutingService {
     );
   }
 
-  // Smallest distance in metres between any point on the route and any hazard.
   double _minClearance(List<LatLng> route, List<LatLng> hazards) {
     const distance = Distance();
     double min = double.infinity;
@@ -117,7 +108,6 @@ class RoutingService {
     return min;
   }
 
-  // Used when OSRM is unreachable: a direct line and a rough 30 km/h estimate.
   RouteResult _straightLine(LatLng from, LatLng to) {
     const distance = Distance();
     final km = distance.as(LengthUnit.Meter, from, to) / 1000.0;

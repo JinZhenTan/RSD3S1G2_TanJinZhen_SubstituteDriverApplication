@@ -1,7 +1,3 @@
-// Model class for a row of the Supabase 'vehicles' table.
-// A user can register as many of their own cars as they like; isDefault
-// marks the one pre-selected when booking a substitute driver or car
-// service, though either flow lets the user pick a different one instead.
 class Vehicle {
   final String id;
   final String userId;

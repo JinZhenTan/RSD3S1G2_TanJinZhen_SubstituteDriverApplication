@@ -10,11 +10,6 @@ import '../../../models/booking.dart';
 import '../../../models/route_result.dart';
 import '../../../models/vehicle.dart';
 
-// State for the 'driver' role. A driver sees unassigned trip requests, accepts
-// one, and moves it through the status steps. Once accepted, the driver's
-// real device GPS (via geolocator) is streamed and written to driver_lat /
-// driver_lng on the row so the passenger's Trip Tracking screen follows the
-// actual car - there is no scripted/simulated movement here.
 class DriverProvider extends ChangeNotifier {
   final _routing = RoutingService();
 
@@ -22,29 +17,18 @@ class DriverProvider extends ChangeNotifier {
 
   List<Booking> availableJobs = [];
   Booking? activeJob;
-  RouteResult? activeRoute; // pickup -> destination (the trip itself)
-  RouteResult? approachRoute; // driver's start -> pickup ("coming to you")
-  LatLng? driverPosition; // where the driver marker currently is
-  // The passenger's own car for the active job - the driver needs to know
-  // which car to look for and whether it is auto / manual.
+  RouteResult? activeRoute;
+  RouteResult? approachRoute;
+  LatLng? driverPosition;
   Vehicle? activeJobVehicle;
   bool isLoading = false;
 
-  // Set once when the passenger changes the active job's row from outside
-  // this app - cancelling it, or confirming completion while this driver was
-  // still on the 'arrived' waiting screen. The driver's screens watch this to
-  // show a one-time notice, then call acknowledgeJobNotice() to clear it.
   Booking? jobEndedByPassenger;
 
   StreamSubscription<Position>? _positionSub;
   StreamSubscription<List<Map<String, dynamic>>>? _jobsSub;
   StreamSubscription<List<Map<String, dynamic>>>? _activeJobSub;
 
-  // ---- Earnings (Profile > Earnings) ----
-  // The basic salary and platform deduction rate are per-driver columns on
-  // profiles (profiles.basic_salary / earnings_deduction_rate), not fixed
-  // constants - the caller (EarningsScreen) passes them in from the signed-in
-  // driver's profile row.
   DateTime earningsMonth = DateTime(DateTime.now().year, DateTime.now().month);
   List<Booking> monthlyTrips = [];
   bool earningsLoading = false;
@@ -68,8 +52,6 @@ class DriverProvider extends ChangeNotifier {
         (earningsMonth.year == now.year && earningsMonth.month < now.month);
   }
 
-  // Load every trip this driver drove in the given month (any status, so a
-  // cancelled trip still shows in the history even though it earns nothing).
   Future<void> loadEarningsForMonth(DateTime month) async {
     final userId = _userId;
     if (userId == null) return;
@@ -107,13 +89,6 @@ class DriverProvider extends ChangeNotifier {
     loadEarningsForMonth(DateTime(earningsMonth.year, earningsMonth.month + 1));
   }
 
-  // Live list of unassigned trip requests so new bookings appear immediately.
-  //
-  // We deliberately stream the recent bookings WITHOUT a server-side
-  // `status = searching` filter and filter in Dart instead: a realtime stream
-  // filtered by status never delivers the update that moves a row OUT of the
-  // filter, so a cancelled or just-accepted booking would otherwise linger in
-  // the list.
   void watchAvailableJobs() {
     _jobsSub?.cancel();
     _jobsSub = supabase
@@ -132,10 +107,6 @@ class DriverProvider extends ChangeNotifier {
         });
   }
 
-  // Load the specific car the passenger picked for this trip (null if they
-  // never added one). Falls back to their default/first vehicle for older
-  // rows saved before per-trip vehicle selection existed (no vehicle_id).
-  // RLS lets any signed-in account read a vehicle row.
   Future<void> _loadJobVehicle(String passengerId, {String? vehicleId}) async {
     try {
       final query = supabase.from('vehicles').select().eq('user_id', passengerId);
@@ -194,7 +165,6 @@ class DriverProvider extends ChangeNotifier {
               LatLng(activeJob!.driverLat!, activeJob!.driverLng!);
         }
         await _loadJobVehicle(activeJob!.userId, vehicleId: activeJob!.vehicleId);
-        // Not once 'arrived' - the car is parked, waiting on the passenger.
         if (activeJob!.status != BookingStatus.arrived) {
           _startLocationUpdates();
         }
@@ -210,14 +180,6 @@ class DriverProvider extends ChangeNotifier {
     }
   }
 
-  // Try to claim a job. Returns false if another driver got it first.
-  //
-  // manualStart lets the driver tap their own starting point on the request
-  // card's map instead of using device GPS - meant for presenting/demoing
-  // the app (e.g. on a laptop or an emulator sitting on its default
-  // location), where real GPS wouldn't be anywhere near the pickup. When
-  // set, live GPS tracking is skipped entirely for this job so the chosen
-  // point isn't immediately overwritten by the device's real position.
   Future<bool> acceptJob(Booking booking, {LatLng? manualStart}) async {
     final userId = _userId;
     if (userId == null) return false;
@@ -236,13 +198,9 @@ class DriverProvider extends ChangeNotifier {
       final pickup = LatLng(activeJob!.pickupLat, activeJob!.pickupLng);
       final dest = LatLng(activeJob!.destLat, activeJob!.destLng);
 
-      // Where the driver is right now - the trip starts with them driving to
-      // the passenger, not from the pickup point.
       final start = manualStart ?? await _resolveDriverStart(pickup);
       driverPosition = start;
 
-      // Persist the start so the passenger's Trip Tracking screen can draw the
-      // "driver coming to you" route, and seed the live position.
       try {
         await supabase.from('bookings').update({
           'driver_start_lat': start.latitude,
@@ -273,10 +231,6 @@ class DriverProvider extends ChangeNotifier {
     }
   }
 
-  // enRoute -> onTrip -> arrived. Completion itself is deliberately NOT
-  // reachable from here: only the passenger's confirmTripCompleted() (via
-  // BookingProvider) or this driver's own forceCompleteJob(reason) below can
-  // move a trip to completed, so a driver alone can never close out a trip.
   Future<void> setJobStatus(BookingStatus status) async {
     final job = activeJob;
     if (job == null) return;
@@ -288,8 +242,6 @@ class DriverProvider extends ChangeNotifier {
           .update({'status': status.name}).eq('id', job.id);
       activeJob = job.copyWith(status: status);
       if (status == BookingStatus.arrived) {
-        // Parked at the destination - stop pushing position updates and wait
-        // for the passenger to confirm from their Trip Tracking screen.
         _positionSub?.cancel();
       }
       notifyListeners();
@@ -298,11 +250,6 @@ class DriverProvider extends ChangeNotifier {
     }
   }
 
-  // Fallback for when the passenger genuinely cannot tap "Confirm trip
-  // completed" themselves (e.g. intoxicated or asleep - the most common
-  // reason someone books a substitute driver in the first place). A reason is
-  // required and stored on the row (completion_note) so the closure is
-  // auditable rather than a driver silently ending the trip on their own.
   Future<bool> forceCompleteJob(String reason) async {
     final job = activeJob;
     if (job == null || reason.trim().isEmpty) return false;
@@ -331,10 +278,6 @@ class DriverProvider extends ChangeNotifier {
     activeJobVehicle = null;
   }
 
-  // Follows the active job's row live so this driver finds out immediately
-  // if the passenger ends it from their side - cancelling it, or confirming
-  // completion while this driver was still waiting on the 'arrived' screen.
-  // Started once a job is accepted (or resumed from a fresh app launch).
   void _subscribeActiveJob(String jobId) {
     _activeJobSub?.cancel();
     _activeJobSub = supabase
@@ -357,16 +300,11 @@ class DriverProvider extends ChangeNotifier {
     });
   }
 
-  // Dismisses the one-time "passenger ended this job" notice once the driver
-  // has seen it.
   void acknowledgeJobNotice() {
     jobEndedByPassenger = null;
     notifyListeners();
   }
 
-  // True if location services are on and permission is granted (requesting it
-  // if not yet asked). Shared by _resolveDriverStart (one-off, at accept) and
-  // _startLocationUpdates (continuous, for the rest of the trip).
   Future<bool> _hasLocationPermission() async {
     try {
       if (!await Geolocator.isLocationServiceEnabled()) return false;
@@ -382,11 +320,6 @@ class DriverProvider extends ChangeNotifier {
     }
   }
 
-  // Resolve where the driver is when they accept a job. Uses the device's real
-  // GPS when it is plausibly near the pickup; otherwise (permission denied, or
-  // an emulator sitting on its default location on another continent) it
-  // synthesises a believable point ~1.5 km away so the demo still shows the
-  // driver driving in to meet the passenger.
   Future<LatLng> _resolveDriverStart(LatLng pickup) async {
     try {
       if (await _hasLocationPermission()) {
@@ -404,14 +337,6 @@ class DriverProvider extends ChangeNotifier {
     return LatLng(pickup.latitude + 0.014, pickup.longitude + 0.011);
   }
 
-  // Stream the driver's real GPS position for the rest of the trip and push
-  // it to driver_lat / driver_lng so the passenger's map follows the actual
-  // car - not a scripted walk along the route line. Stops itself once the
-  // trip is arrived/completed (see setJobStatus / _clearActiveJob).
-  //
-  // If location permission/service isn't available, driverPosition simply
-  // stays at wherever acceptJob resolved it to - documented limitation for
-  // the assignment rather than a fallback fake walk.
   Future<void> _startLocationUpdates() async {
     _positionSub?.cancel();
     if (!await _hasLocationPermission()) {
@@ -420,7 +345,7 @@ class DriverProvider extends ChangeNotifier {
     }
     const settings = LocationSettings(
       accuracy: LocationAccuracy.high,
-      distanceFilter: 10, // metres moved before another update is emitted
+      distanceFilter: 10,
     );
     _positionSub = Geolocator.getPositionStream(locationSettings: settings)
         .listen(_onPosition, onError: (e) {

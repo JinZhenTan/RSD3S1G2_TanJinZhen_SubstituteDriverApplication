@@ -7,10 +7,6 @@ import '../../weather_safety/providers/weather_provider.dart';
 import '../providers/service_staff_provider.dart';
 import 'service_requests_screen.dart';
 
-// App shell for the 'service_staff' role. Two tabs: Home (the dashboard -
-// greeting + weather banner + quick actions, same visual pattern as the
-// passenger/driver Home tab - with the job list underneath) and the full
-// account-management Profile screen (shared with the passenger app).
 class ServiceShell extends StatefulWidget {
   const ServiceShell({super.key});
 

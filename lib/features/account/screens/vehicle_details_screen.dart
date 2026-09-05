@@ -9,9 +9,6 @@ import '../../../models/vehicle.dart';
 import '../providers/account_provider.dart';
 import '../widgets/vehicle_form_sheet.dart';
 
-// Module 4 - My vehicle details. A user can register as many of their own
-// cars as they like (used by both core services); one is marked default,
-// but Find a Driver / Car Service let the trip use a different one instead.
 class VehicleDetailsScreen extends StatelessWidget {
   const VehicleDetailsScreen({super.key});
 

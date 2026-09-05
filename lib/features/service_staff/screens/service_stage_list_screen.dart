@@ -13,10 +13,6 @@ import 'service_centre_screen.dart';
 import 'service_pickup_screen.dart';
 import 'service_return_screen.dart';
 
-// Which of the 3 job stages this list is scoped to - each of the Home tab's
-// quick actions opens one of these, and each shows only the jobs actually
-// relevant to that stage (a job moves off one list and onto the next as its
-// status advances), rather than one combined list for everything.
 enum StaffStage { pickup, service, returnTrip }
 
 extension on StaffStage {
@@ -43,16 +39,12 @@ extension on StaffStage {
   }
 }
 
-// True if this request belongs in the given stage's list - mine or, for
-// pickup, still unassigned and open to accept. A request cancelled partway
-// through stays on whichever stage it was cancelled during, so its state is
-// still reachable.
 bool _inStage(CarServiceRequest r, StaffStage stage, String? userId) {
   final mine = r.driverId == userId;
   switch (stage) {
     case StaffStage.pickup:
       if (r.status == CarServiceStatus.requested) {
-        return r.driverId == null; // open to accept
+        return r.driverId == null;
       }
       if (!mine) return false;
       if (r.status == CarServiceStatus.cancelled) return r.pickedUpAt == null;
@@ -74,9 +66,6 @@ bool _inStage(CarServiceRequest r, StaffStage stage, String? userId) {
   }
 }
 
-// Service staff role - the list behind each of the 3 Home quick actions.
-// Shows only the jobs that actually belong at this stage, so opening
-// "Pickup" never shows a job that's already being serviced, and so on.
 class ServiceStageListScreen extends StatelessWidget {
   const ServiceStageListScreen({super.key, required this.stage});
 

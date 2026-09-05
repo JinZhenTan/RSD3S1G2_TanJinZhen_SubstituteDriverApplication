@@ -1,10 +1,5 @@
 import '../../supabase_config.dart';
 
-// Tracks, per signed-in account and per chat thread (a booking's or a car
-// service request's activity_messages), when that account last opened the
-// thread. Backs the small unread-message dot shown next to chat entry points
-// (Trip Tracking's driver card, the driver's "Message passenger" button,
-// Activity rows) so a new message is noticeable without opening every chat.
 class ChatReadService {
   static final ChatReadService _instance = ChatReadService._internal();
   factory ChatReadService() => _instance;
@@ -32,8 +27,6 @@ class ChatReadService {
     }
   }
 
-  // Called when a thread is opened (ActivityChatScreen) so its unread dot
-  // clears for this account.
   Future<void> markRead({String? bookingId, String? serviceRequestId}) async {
     final userId = _userId;
     if (userId == null) return;

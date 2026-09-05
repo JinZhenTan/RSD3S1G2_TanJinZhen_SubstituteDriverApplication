@@ -13,10 +13,6 @@ import 'service_centre_screen.dart';
 import 'service_pickup_screen.dart';
 import 'service_return_screen.dart';
 
-// Module 4 (service_staff role) - Earnings. Same layout as the driver role's
-// Earnings screen: a basic salary + per-job earnings breakdown for a
-// selected month (defaults to the current month), plus the job list behind
-// the numbers.
 class StaffEarningsScreen extends StatefulWidget {
   const StaffEarningsScreen({super.key});
 
@@ -179,9 +175,6 @@ class _MonthSelector extends StatelessWidget {
   }
 }
 
-// The CSV/PDF export button on the earnings summary card - "a real export,
-// not just a placeholder button" (CLAUDE.md), same requirement as the
-// driver's trip log but for a service partner's completed jobs.
 class _ExportButton extends StatelessWidget {
   const _ExportButton({required this.jobs, required this.month});
 

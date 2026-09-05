@@ -8,16 +8,12 @@ import '../../../core/widgets/primary_button.dart';
 import '../../../core/widgets/screen_header.dart';
 import '../../../core/widgets/tr.dart';
 
-// The value popped back from the "drop a pin" screen.
 class PickedLocation {
   final LatLng point;
   final String address;
   PickedLocation(this.point, this.address);
 }
 
-// Module 3 - Drop a pin. The centre of the map is the chosen point (a fixed
-// centre crosshair over a movable map, like the prototype). On confirm we
-// reverse-geocode the centre to a readable address.
 class PickMapScreen extends StatefulWidget {
   const PickMapScreen({super.key});
 

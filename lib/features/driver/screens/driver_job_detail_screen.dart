@@ -14,8 +14,6 @@ import '../../../models/vehicle.dart';
 import '../../booking/screens/activity_chat_screen.dart';
 import '../providers/driver_provider.dart';
 
-// Driver role - the active booking. Map with the route, plus the status
-// buttons that the passenger's tracking screen follows.
 class DriverJobDetailScreen extends StatelessWidget {
   const DriverJobDetailScreen({super.key});
 
@@ -81,9 +79,6 @@ class DriverJobDetailScreen extends StatelessWidget {
     final pickup = LatLng(job.pickupLat, job.pickupLng);
     final dest = LatLng(job.destLat, job.destLng);
     final driverPos = driver.driverPosition;
-    // enRoute = still driving to meet the passenger; onTrip/arrived = met, now
-    // driving (or parked) at the destination (map drops the pickup + approach
-    // line).
     final enRoute = job.status == BookingStatus.enRoute;
 
     final markers = <Marker>[
@@ -116,11 +111,6 @@ class DriverJobDetailScreen extends StatelessWidget {
               children: [
                 MapView(
                   centre: driverPos ?? pickup,
-                  // While heading to the passenger, the route that matters
-                  // *right now* is the way there - shown as the prominent
-                  // line, not a faint secondary one, so the driver can
-                  // actually follow it. The upcoming pickup -> destination
-                  // trip is the secondary preview until then.
                   routePoints: enRoute
                       ? (driver.approachRoute?.points ?? [driverPos ?? pickup, pickup])
                       : (driver.activeRoute?.points ?? [pickup, dest]),
@@ -246,12 +236,6 @@ class DriverJobDetailScreen extends StatelessWidget {
     );
   }
 
-  // Reason is required so a force-completed booking is always auditable -
-  // see DriverProvider.forceCompleteJob. The most common legitimate reason is
-  // the passenger being intoxicated or asleep, which is why this flow exists
-  // at all: it protects the driver from being stuck unable to end (and get
-  // paid for) a booking when the passenger can't tap the confirm button
-  // themselves.
   Future<void> _forceComplete(BuildContext context) async {
     final reasonController = TextEditingController();
     final confirmed = await showDialog<bool>(
@@ -337,7 +321,6 @@ class DriverJobDetailScreen extends StatelessWidget {
   }
 }
 
-// The passenger's own car - what the substitute driver will be driving.
 class _CarCard extends StatelessWidget {
   const _CarCard({required this.car});
 

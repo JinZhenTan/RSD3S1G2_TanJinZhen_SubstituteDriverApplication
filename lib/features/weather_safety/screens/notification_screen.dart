@@ -14,10 +14,6 @@ import '../providers/weather_provider.dart';
 import '../widgets/alert_card.dart';
 import '../widgets/safe_route_card.dart';
 
-// Module 2 - Notification tab. Segmented All / Safety alerts / Updates feed of
-// data.gov.my weather alerts + trip / car-service updates, plus the safe-route
-// suggestion card. What shows respects the account Notification settings and
-// the device Safety alert preferences.
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
 
@@ -26,10 +22,8 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
-  int _filter = 0; // 0 = all, 1 = safety alerts, 2 = updates
+  int _filter = 0;
 
-  // Safety alerts the user has not muted (account master toggle + per-type
-  // device preference).
   List<WeatherAlert> _safety(
     WeatherProvider weather,
     NotificationSettings ns,
@@ -50,8 +44,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
     }).toList();
   }
 
-  // Trip + car-service updates synthesised from the latest activity, gated by
-  // the account Notification settings.
   List<WeatherAlert> _updates(BookingProvider booking, NotificationSettings ns) {
     final items = <WeatherAlert>[];
 

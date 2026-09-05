@@ -7,18 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/i18n/translation_overrides.dart';
 import '../../../core/services/translation_service.dart';
 
-// Device-level preferences (Module 4) kept with SharedPreferences, like the
-// user_profile practical. These tune what THIS phone shows and do not need to
-// sync across devices - unlike notification_settings, which are account-level
-// in Supabase. Kept in a provider so the Profile menu label, the Notification
-// feed and the safe-route card all react to a change immediately.
-//
-// This provider also drives the app's UI language. Every visible string is
-// written in English; t('English text') returns the machine translation for
-// the chosen language. Translations are cached in SharedPreferences so a
-// language is only downloaded once, and the app pre-warms every language in
-// the background so that picking one on the Language screen switches instantly
-// with no English flash.
 class PreferencesProvider extends ChangeNotifier {
   static const String _languageKey = 'language';
   static const String _safetyPrefix = 'safety_';
@@ -32,7 +20,6 @@ class PreferencesProvider extends ChangeNotifier {
     'தமிழ்',
   ];
 
-  // key -> default value
   static const Map<String, bool> safetyDefaults = {
     'flood_alerts': true,
     'storm_warnings': true,
@@ -42,10 +29,6 @@ class PreferencesProvider extends ChangeNotifier {
   };
 
   String language = 'English';
-  // While a non-English language is being fetched, this holds the target so the
-  // Language screen can show a spinner on that row. The committed `language`
-  // only flips once every string is ready, so there is never a half-translated
-  // frame.
   String? switchingTo;
 
   Map<String, bool> safety = Map.of(safetyDefaults);
@@ -53,13 +36,8 @@ class PreferencesProvider extends ChangeNotifier {
 
   final TranslationService _translator = TranslationService();
 
-  // languageCode -> (english -> translated). Loaded from SharedPreferences and
-  // topped up by the translation API.
   final Map<String, Map<String, String>> _cache = {};
-  // Every English string the app has ever rendered (persisted). The background
-  // warm-up translates this whole set into every language.
   final Set<String> _seen = {};
-  // Strings still waiting for the lazy per-string fallback fetch.
   final Set<String> _pending = {};
   Timer? _flushTimer;
   Timer? _warmTimer;
@@ -83,7 +61,6 @@ class PreferencesProvider extends ChangeNotifier {
         _seen.addAll((jsonDecode(seenRaw) as List).cast<String>());
       }
 
-      // Restore cached translations for the non-English languages.
       for (final code in TranslationService.languageCodes.values) {
         if (code == 'en') continue;
         final raw = prefs.getString('$_translationPrefix$code');
@@ -98,16 +75,10 @@ class PreferencesProvider extends ChangeNotifier {
     loaded = true;
     notifyListeners();
 
-    // A little after the first screens have rendered (and filled _seen),
-    // translate everything into every language in the background so a later
-    // switch is instant.
     _warmTimer?.cancel();
     _warmTimer = Timer(const Duration(seconds: 3), warmUpAllLanguages);
   }
 
-  // Called from the Language screen so translations are ready before the user
-  // taps a row. If called again while already running, it re-runs once more
-  // afterwards so any strings seen in between are picked up.
   Future<void> warmUpAllLanguages() async {
     if (_warming) {
       _warmAgain = true;
@@ -132,8 +103,6 @@ class PreferencesProvider extends ChangeNotifier {
   Future<void> setLanguage(String value) async {
     if (value == language || value == switchingTo) return;
 
-    // Persist the choice immediately so it survives even if the fetch below is
-    // interrupted or the app is closed mid-switch.
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_languageKey, value);
@@ -149,9 +118,6 @@ class PreferencesProvider extends ChangeNotifier {
       return;
     }
 
-    // Fetch anything not already cached, THEN flip - so the switch is clean.
-    // Cap the wait: if the network is slow/offline, switch anyway after a few
-    // seconds and let the remaining strings fill in lazily (or stay English).
     switchingTo = value;
     notifyListeners();
     try {
@@ -165,17 +131,12 @@ class PreferencesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // The translation lookup used by the Tr widget / context.tr(). Returns the
-  // English text immediately; if a translation is needed but not cached yet it
-  // queues a download and the widget rebuilds once it arrives (the fallback
-  // path - normally the warm-up has already cached everything).
   String t(String english) {
     if (_seen.add(english)) _markSeenDirty();
 
     final code = _code;
     if (code == 'en') return english;
 
-    // Hand-picked correction wins over the machine translation.
     final override = translationOverrides[code]?[english];
     if (override != null) return override;
 
@@ -206,8 +167,6 @@ class PreferencesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Translate any of `englishStrings` missing from the cache for `code`, then
-  // persist the updated map (and the seen-set).
   Future<void> _ensureCached(String code, List<String> englishStrings) async {
     final map = _cache.putIfAbsent(code, () => {});
     final overrides = translationOverrides[code] ?? const {};

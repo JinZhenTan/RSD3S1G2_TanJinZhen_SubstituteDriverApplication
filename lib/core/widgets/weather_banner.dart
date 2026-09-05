@@ -4,11 +4,6 @@ import '../../models/weather_alert.dart';
 import '../theme/app_theme.dart';
 import 'tr.dart';
 
-// Shared Module 2 widget. the brief calls this cross-module reuse out
-// explicitly: the same banner appears on Home (inside the navy hero) and on
-// the Trip Tracking map. Built once here.
-//
-// Designed to sit on a dark/navy background (translucent white surface).
 class WeatherBanner extends StatelessWidget {
   const WeatherBanner({super.key, required this.alert, this.onTap});
 

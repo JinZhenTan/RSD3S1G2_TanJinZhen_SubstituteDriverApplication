@@ -6,13 +6,6 @@ import '../../../core/widgets/tr.dart';
 import '../../../models/payment_method.dart';
 import '../providers/account_provider.dart';
 
-// Real-world card entry: number, expiry, CVV, cardholder name. Only the last
-// 4 digits and expiry are ever saved (see PaymentMethod's doc comment) - CVV
-// is required on the form (as a real checkout would) but is read and
-// discarded, never sent anywhere or stored.
-//
-// Shared by the Payment methods screen and the payment picker on Find a
-// Driver, so a card can be added/edited from either place with the same form.
 Future<void> showCardFormSheet(
   BuildContext context,
   AccountProvider account, {
@@ -66,9 +59,6 @@ Future<void> showCardFormSheet(
                 FilteringTextInputFormatter.digitsOnly,
                 LengthLimitingTextInputFormatter(19),
               ],
-              // Editing an existing card starts from the masked number - any
-              // edit to it means a new card number, so it's re-validated as
-              // fresh digits rather than kept as the old last4.
               onTap: isEdit && numberController.text.contains('•')
                   ? () => numberController.clear()
                   : null,
@@ -166,7 +156,6 @@ Future<void> showCardFormSheet(
   );
 }
 
-// Auto-inserts the "/" as the user types MMYY digits.
 class _ExpiryFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(

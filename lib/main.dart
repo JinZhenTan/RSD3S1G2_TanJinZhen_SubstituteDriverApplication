@@ -20,13 +20,10 @@ import 'models/user_role.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Practical 11: initialise Supabase once, before runApp().
   await Supabase.initialize(
     url: supabaseUrl,
     publishableKey: supabaseKey,
   );
-  // Load the saved language + its cached translations before the first frame,
-  // so the app opens straight in the chosen language with no English flash.
   final preferences = PreferencesProvider();
   await preferences.load();
   runApp(GantiApp(preferences: preferences));
@@ -39,8 +36,6 @@ class GantiApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // One MultiProvider at the root so every feature provider is available to
-    // its screens. They are populated by each shell after sign-in.
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
@@ -62,11 +57,6 @@ class GantiApp extends StatelessWidget {
   }
 }
 
-// Decides what to show based on sign-in state and the account's role:
-//   not signed in     -> LoginScreen
-//   role 'user'        -> AppShell         (the passenger app)
-//   role 'driver'      -> DriverShell
-//   role 'service_staff'-> ServiceShell
 class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
 
@@ -87,7 +77,6 @@ class _AuthGateState extends State<AuthGate> {
       return const LoginScreen();
     }
 
-    // Load the profile once so we know which shell to route to.
     if (!_profileRequested) {
       _profileRequested = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {

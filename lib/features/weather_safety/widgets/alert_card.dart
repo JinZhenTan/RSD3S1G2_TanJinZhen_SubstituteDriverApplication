@@ -5,8 +5,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/tr.dart';
 import '../../../models/weather_alert.dart';
 
-// One alert card in the Notification feed. The colour and icon come from the
-// alert's type / severity.
 class AlertCard extends StatelessWidget {
   const AlertCard({super.key, required this.alert});
 

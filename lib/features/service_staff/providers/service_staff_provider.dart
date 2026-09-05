@@ -16,46 +16,30 @@ import '../../../models/service_photo.dart';
 import '../../../models/service_task.dart';
 import '../../../models/vehicle.dart';
 
-// State for the 'service_staff' role. A service partner sees unassigned car
-// service requests, accepts one (choosing which service centre it goes to),
-// drives to the owner's address, collects the car, works through the task
-// checklist, and enters the final cost - which is the sum of the billable
-// tasks, not a free-text guess.
-//
-// The staff's real device GPS (via geolocator) is streamed for the rest of
-// the job and written to staff_lat / staff_lng so the owner's Status Tracker
-// follows the actual vehicle - same fix as the substitute driver's tracking,
-// no scripted/simulated movement.
 class ServiceStaffProvider extends ChangeNotifier {
   static const String _photoBucket = 'service-photos';
 
   final _routing = RoutingService();
 
   String? get _userId => supabase.auth.currentUser?.id;
-  // Public read-only access to the signed-in staff id - used by the stage
-  // list screens to tell "mine" jobs apart from unassigned ones.
   String? get currentUserId => _userId;
 
-  // ---- Feed ----
   List<CarServiceRequest> requests = [];
   bool isLoading = false;
 
-  // ---- Seeded workshops ----
   List<ServiceCentre> serviceCentres = [];
 
-  // ---- The job being worked ----
   CarServiceRequest? active;
-  Vehicle? activeVehicle; // the owner's car
-  Profile? activeCustomer; // the owner
+  Vehicle? activeVehicle;
+  Profile? activeCustomer;
   ServiceCentre? activeCentre;
   List<ServiceTask> tasks = [];
   List<ServicePhoto> photos = [];
 
-  // ---- Live map ----
   LatLng? staffPosition;
-  RouteResult? approachRoute; // staff start -> owner's address
-  RouteResult? toCentreRoute; // owner's address -> service centre
-  RouteResult? returnRoute; // service centre -> owner's address
+  RouteResult? approachRoute;
+  RouteResult? toCentreRoute;
+  RouteResult? returnRoute;
 
   StreamSubscription<Position>? _positionSub;
 
@@ -64,11 +48,6 @@ class ServiceStaffProvider extends ChangeNotifier {
   StreamSubscription<List<Map<String, dynamic>>>? _photosSub;
   StreamSubscription<List<Map<String, dynamic>>>? _feedSub;
 
-  // ---- Earnings (Profile > Earnings) ----
-  // Same idea as the driver role's Earnings screen: a basic salary + a share
-  // of the jobs actually completed in the selected month, using the same
-  // profiles.basic_salary / earnings_deduction_rate columns (not
-  // driver-specific - any role can have them).
   DateTime earningsMonth = DateTime(DateTime.now().year, DateTime.now().month);
   List<CarServiceRequest> monthlyJobs = [];
   bool earningsLoading = false;
@@ -93,9 +72,6 @@ class ServiceStaffProvider extends ChangeNotifier {
         (earningsMonth.year == now.year && earningsMonth.month < now.month);
   }
 
-  // Load every job this staff member worked in the given month (any status,
-  // so a cancelled job still shows in the history even though it earns
-  // nothing).
   Future<void> loadEarningsForMonth(DateTime month) async {
     final userId = _userId;
     if (userId == null) return;
@@ -133,7 +109,6 @@ class ServiceStaffProvider extends ChangeNotifier {
     loadEarningsForMonth(DateTime(earningsMonth.year, earningsMonth.month + 1));
   }
 
-  // ---- Derived --------------------------------------------------------------
   double get billableTotal =>
       tasks.where((t) => t.isBillable).fold(0.0, (s, t) => s + t.price);
 
@@ -145,8 +120,6 @@ class ServiceStaffProvider extends ChangeNotifier {
 
   int get tasksDone => tasks.where((t) => t.isDone).length;
 
-  // Can the staff move the job to the next status step? Returns a reason string
-  // when they cannot, so the screen can explain the hold-up.
   String? get advanceBlockedReason {
     final r = active;
     if (r == null) return 'No job selected';
@@ -159,7 +132,7 @@ class ServiceStaffProvider extends ChangeNotifier {
         }
         return null;
       case CarServiceStatus.pickedUp:
-        return null; // arriving at the centre
+        return null;
       case CarServiceStatus.atCentre:
         if (pendingApprovals.isNotEmpty) {
           return '${pendingApprovals.length} extra task(s) still waiting on the owner';
@@ -167,7 +140,7 @@ class ServiceStaffProvider extends ChangeNotifier {
         if (tasksBlockingReturn.isNotEmpty) {
           return '${tasksBlockingReturn.length} task(s) not ticked off yet';
         }
-        return null; // ready to send the car back
+        return null;
       case CarServiceStatus.returning:
         if (!photos.any((p) => p.phase == ServicePhotoPhase.ret)) {
           return 'Add at least one return photo of the car';
@@ -185,7 +158,6 @@ class ServiceStaffProvider extends ChangeNotifier {
       active!.status != CarServiceStatus.returned &&
       advanceBlockedReason == null;
 
-  // ---- Seeded data --------------------------------------------------------
   Future<void> loadServiceCentres() async {
     if (serviceCentres.isNotEmpty) return;
     try {
@@ -199,7 +171,6 @@ class ServiceStaffProvider extends ChangeNotifier {
     }
   }
 
-  // ---- Feed -------------------------------------------------------------
   void watchRequests() {
     _feedSub?.cancel();
     _feedSub = supabase
@@ -210,13 +181,9 @@ class ServiceStaffProvider extends ChangeNotifier {
           final userId = _userId;
           requests = rows
               .map(CarServiceRequest.fromJson)
-              // A cancelled-and-unassigned request has nothing for any staff
-              // to accept, but a job already assigned to me stays visible
-              // even if the owner then cancelled it, so I can see that.
               .where((r) =>
                   r.driverId == userId || (r.driverId == null && !r.isCancelled))
               .toList();
-          // Keep the active job's row in sync if it is in the feed.
           if (active != null) {
             for (final r in requests) {
               if (r.id == active!.id) active = r;
@@ -261,7 +228,6 @@ class ServiceStaffProvider extends ChangeNotifier {
     }
   }
 
-  // ---- Open a job -----------------------------------------------------
   void selectRequest(CarServiceRequest request) {
     active = request;
     activeVehicle = null;
@@ -278,9 +244,6 @@ class ServiceStaffProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Called by the detail screen: follow the row + tasks + photos live, load the
-  // owner / car / centre, rebuild the map legs, and resume real GPS tracking
-  // if this job is mine and already in progress.
   Future<void> subscribeToActive() async {
     final request = active;
     final userId = _userId;
@@ -412,11 +375,6 @@ class ServiceStaffProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ---- Accept --------------------------------------------------------
-  // There is only one physical service centre (TAR UMT Penang Branch), so
-  // accepting a job no longer asks the staff to pick one - it's assigned
-  // automatically, and the staff's starting position for the job is the
-  // centre's own location (they set out from there), not a GPS guess.
   static const String fixedServiceCentreId = 'sc_tarumt';
 
   Future<bool> acceptRequest(CarServiceRequest request) async {
@@ -470,7 +428,6 @@ class ServiceStaffProvider extends ChangeNotifier {
     }
   }
 
-  // ---- Status steps -------------------------------------------------
   Future<void> advanceStatus() async {
     final request = active;
     if (request == null || !canAdvance) return;
@@ -489,8 +446,6 @@ class ServiceStaffProvider extends ChangeNotifier {
         updates['at_centre_at'] = nowIso;
         break;
       case CarServiceStatus.returning:
-        // The service work is done as of this step - lock in the final
-        // cost here rather than waiting for the car to actually arrive back.
         updates['returning_at'] = nowIso;
         updates['final_cost'] = billableTotal;
         break;
@@ -540,13 +495,6 @@ class ServiceStaffProvider extends ChangeNotifier {
     }
   }
 
-  // ---- Tasks -------------------------------------------------------
-  // Every write below applies to local state immediately rather than
-  // waiting on the service_tasks realtime echo, which isn't always
-  // delivered back to the same client that made the write - without this a
-  // staff member's own screen could stay stuck showing the old state (e.g.
-  // a ticked box the staff had just unticked snapping back, or a checklist
-  // that still looked incomplete after a photo/task change actually saved).
   Future<void> toggleTask(ServiceTask task, bool done) async {
     try {
       await supabase.from('service_tasks').update({
@@ -565,7 +513,6 @@ class ServiceStaffProvider extends ChangeNotifier {
     await _recomputeFinalCost();
   }
 
-  // Extra work found on inspection - starts 'pending' so the owner decides.
   Future<void> addExtraTask({
     required String title,
     String? detail,
@@ -601,8 +548,6 @@ class ServiceStaffProvider extends ChangeNotifier {
     await _recomputeFinalCost();
   }
 
-  // Keep car_service_requests.final_cost = sum of the billable tasks, so the
-  // owner's Review & Pay screen always shows the live figure.
   Future<void> _recomputeFinalCost() async {
     final request = active;
     if (request == null) return;
@@ -621,7 +566,6 @@ class ServiceStaffProvider extends ChangeNotifier {
     }
   }
 
-  // ---- Photos -----------------------------------------------------
   Future<bool> addPhoto({
     required ServicePhotoPhase phase,
     required Uint8List bytes,
@@ -647,11 +591,6 @@ class ServiceStaffProvider extends ChangeNotifier {
         'image_url': url,
         'caption': caption,
       }).select();
-      // Apply locally right away rather than waiting on the realtime echo,
-      // which isn't always delivered back to the same client that wrote it -
-      // this was leaving the staff's own screen still showing "no pick-up
-      // photo yet" (and blocking advance) even after a successful upload,
-      // while the owner's screen (a different client) saw it fine.
       final row = (inserted as List).first as Map<String, dynamic>;
       photos = [...photos, ServicePhoto.fromJson(row)];
       notifyListeners();
@@ -662,7 +601,6 @@ class ServiceStaffProvider extends ChangeNotifier {
     }
   }
 
-  // ---- Location walk --------------------------------------------
   LatLng _pickupOf(CarServiceRequest r) => LatLng(
         r.pickupLat ?? activeCentre?.lat ?? 3.139,
         r.pickupLng ?? activeCentre?.lng ?? 101.6869,
@@ -681,10 +619,6 @@ class ServiceStaffProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // True if location services are on and permission is granted (requesting it
-  // if not yet asked). Used by _startLocationUpdates once a job is accepted -
-  // the starting position itself now just comes from the fixed service
-  // centre (see acceptRequest), not GPS.
   Future<bool> _hasLocationPermission() async {
     try {
       if (!await Geolocator.isLocationServiceEnabled()) return false;
@@ -700,11 +634,6 @@ class ServiceStaffProvider extends ChangeNotifier {
     }
   }
 
-  // Stream the staff's real GPS position for the rest of the job and push it
-  // to staff_lat / staff_lng so the owner's map follows the actual vehicle -
-  // not a scripted walk along the route line. Stops itself on 'returned' (see
-  // advanceStatus). If location permission/service isn't available,
-  // staffPosition simply stays at wherever acceptRequest resolved it to.
   Future<void> _startLocationUpdates() async {
     _positionSub?.cancel();
     if (!await _hasLocationPermission()) {
@@ -713,7 +642,7 @@ class ServiceStaffProvider extends ChangeNotifier {
     }
     const settings = LocationSettings(
       accuracy: LocationAccuracy.high,
-      distanceFilter: 10, // metres moved before another update is emitted
+      distanceFilter: 10,
     );
     _positionSub = Geolocator.getPositionStream(locationSettings: settings)
         .listen(_onPosition, onError: (e) {
@@ -740,7 +669,6 @@ class ServiceStaffProvider extends ChangeNotifier {
     }
   }
 
-  // ---- helpers ---------------------------------------------------
   String _extensionOf(String name) {
     final dot = name.lastIndexOf('.');
     if (dot == -1 || dot == name.length - 1) return 'jpg';

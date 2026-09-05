@@ -5,11 +5,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/tr.dart';
 import '../providers/auth_provider.dart';
 
-// Self-service sign-up only ever creates a passenger ('user') account -
-// there is no role picker. Driver and service-staff accounts are created by
-// inserting the profiles row directly in Supabase (see CLAUDE.md/README),
-// not through this screen, since those are operator/partner accounts, not
-// something a member of the public should be able to grant themselves.
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
 
@@ -44,8 +39,6 @@ class _SignupScreenState extends State<SignupScreen> {
     );
 
     if (success && mounted && auth.session == null) {
-      // Email confirmation is enabled on the Supabase project - no session
-      // yet, so tell the user to confirm first, then send them back.
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
@@ -55,8 +48,6 @@ class _SignupScreenState extends State<SignupScreen> {
       );
       Navigator.of(context).pop();
     }
-    // If a session was returned immediately (email confirmation disabled), the
-    // AuthGate watching AuthProvider.isSignedIn takes over automatically.
   }
 
   @override

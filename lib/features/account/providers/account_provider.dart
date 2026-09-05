@@ -7,9 +7,6 @@ import '../../../models/profile.dart';
 import '../../../models/receipt.dart';
 import '../../../models/vehicle.dart';
 
-// Module 4 state. Holds everything the Profile tab and its sub-pages need:
-// the profile row, the user's vehicles, payment methods, receipts and the
-// notification settings row. All reads / writes go through the Supabase client.
 class AccountProvider extends ChangeNotifier {
   Profile? profile;
   List<Vehicle> vehicles = [];
@@ -22,10 +19,6 @@ class AccountProvider extends ChangeNotifier {
 
   String? get _userId => supabase.auth.currentUser?.id;
 
-  // Called once after sign-in (from AuthGate) to pull the account data in.
-  // Retries a few times: right after sign-up the profile row may not be
-  // committed yet, and a small client/server clock difference can make the
-  // fresh JWT briefly invalid ("JWT issued at future").
   Future<void> load() async {
     final userId = _userId;
     if (userId == null) return;
@@ -43,7 +36,6 @@ class AccountProvider extends ChangeNotifier {
             .maybeSingle();
 
         if (profileRow == null) {
-          // Row not there yet - wait and try the whole load again.
           await Future.delayed(const Duration(seconds: 1));
           continue;
         }
@@ -75,7 +67,6 @@ class AccountProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Total of every receipt dated in the current calendar month.
   double get spentThisMonth {
     final now = DateTime.now();
     double total = 0;
@@ -106,10 +97,6 @@ class AccountProvider extends ChangeNotifier {
       paymentMethods = (rows as List)
           .map((json) => PaymentMethod.fromJson(json as Map<String, dynamic>))
           .toList();
-      // Cash and an e-wallet are always available payment options, not
-      // something the user opts into - seed them once per account instead of
-      // offering an "add payment method" flow. Only the card is genuinely
-      // optional, since it needs real details entered.
       if (!hasType('cash')) await addPaymentMethod('cash', 'Cash');
       if (!hasType('ewallet')) {
         await addPaymentMethod('ewallet', "Touch 'n Go eWallet");
@@ -138,11 +125,6 @@ class AccountProvider extends ChangeNotifier {
     }
   }
 
-  // Only one saved method per type (card / ewallet / cash) - changing a
-  // card's details is always an edit (updatePaymentMethod), never a second
-  // "add", so there is never an ambiguous choice between two cards at
-  // payment time. Returns false (and adds nothing) if that type is already
-  // saved; the caller should route to editing the existing one instead.
   bool hasType(String type) => paymentMethods.any((m) => m.type == type);
 
   Future<bool> addPaymentMethod(
@@ -177,8 +159,6 @@ class AccountProvider extends ChangeNotifier {
     }
   }
 
-  // Update an existing method's details in place (card number/expiry/name
-  // changed) - the row and its id stay the same, unlike addPaymentMethod.
   Future<void> updatePaymentMethod(PaymentMethod updated) async {
     try {
       await supabase.from('payment_methods').update({
@@ -202,7 +182,6 @@ class AccountProvider extends ChangeNotifier {
     try {
       await supabase.from('payment_methods').delete().eq('id', method.id);
       paymentMethods = paymentMethods.where((m) => m.id != method.id).toList();
-      // If the default was removed, promote the first remaining method.
       if (method.isDefault && paymentMethods.isNotEmpty) {
         await setDefaultPaymentMethod(paymentMethods.first);
       } else {
@@ -258,9 +237,6 @@ class AccountProvider extends ChangeNotifier {
     }
   }
 
-  // A user can register as many vehicles as they like (CLAUDE.md feedback -
-  // was previously a single car per account). The first one added becomes
-  // the default automatically, same as the first payment method.
   Future<void> addVehicle(Vehicle newVehicle) async {
     final userId = _userId;
     if (userId == null) return;
@@ -292,7 +268,6 @@ class AccountProvider extends ChangeNotifier {
     try {
       await supabase.from('vehicles').delete().eq('id', target.id);
       vehicles = vehicles.where((v) => v.id != target.id).toList();
-      // If the default was removed, promote the first remaining vehicle.
       if (target.isDefault && vehicles.isNotEmpty) {
         await setDefaultVehicle(vehicles.first);
       } else {
@@ -317,7 +292,6 @@ class AccountProvider extends ChangeNotifier {
     }
   }
 
-  // Update the editable profile fields (name / phone) from the Profile screen.
   Future<void> updateProfile({required String name, String? phone}) async {
     final userId = _userId;
     final current = profile;

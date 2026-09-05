@@ -1,6 +1,3 @@
-// Model class for a row of the Supabase 'notification_settings' table
-// (one row per user). These are account-level toggles so they follow the user
-// across devices.
 class NotificationSettings {
   final bool tripUpdates;
   final bool safetyAlerts;

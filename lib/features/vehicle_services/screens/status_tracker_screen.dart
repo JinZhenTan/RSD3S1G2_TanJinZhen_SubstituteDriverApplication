@@ -18,10 +18,6 @@ import '../../booking/screens/activity_chat_screen.dart';
 import '../providers/car_service_provider.dart';
 import 'review_pay_screen.dart';
 
-// Module 3 - Status Tracker (owner's view). Follows the request live: the
-// staff's location on the map, the 5-step timeline with real timestamps, the
-// task checklist as the staff ticks it off, any extra work waiting on the
-// owner's approval, before/after photos, and the estimate-vs-final cost.
 class StatusTrackerScreen extends StatefulWidget {
   const StatusTrackerScreen({super.key});
 
@@ -61,8 +57,6 @@ class _StatusTrackerScreenState extends State<StatusTrackerScreen> {
             ScreenHeader(
               eyebrow: 'VEHICLE CARE',
               title: 'Pick-up status',
-              // Same reasoning as Trip Tracking - a live request is already
-              // under way, so "back" returns to Home, not the booking form.
               onBack: () => Navigator.of(context).popUntil((r) => r.isFirst),
             ),
             Padding(
@@ -89,8 +83,6 @@ class _StatusTrackerScreenState extends State<StatusTrackerScreen> {
             ScreenHeader(
               eyebrow: 'VEHICLE CARE',
               title: 'Pick-up status',
-              // Same reasoning as Trip Tracking - a live request is already
-              // under way, so "back" returns to Home, not the booking form.
               onBack: () => Navigator.of(context).popUntil((r) => r.isFirst),
             ),
             Padding(
@@ -168,8 +160,6 @@ class _StatusTrackerScreenState extends State<StatusTrackerScreen> {
                       ),
                     ),
 
-                  // Solo-demo toggle - only while no real service partner is on
-                  // the job. Once one accepts it, they drive the status.
                   if (r.driverId == null && r.status != CarServiceStatus.returned)
                     Padding(
                       padding: const EdgeInsets.only(top: 10),
@@ -180,9 +170,6 @@ class _StatusTrackerScreenState extends State<StatusTrackerScreen> {
                       ),
                     ),
 
-                  // Cancelling stops being offered once the car has actually
-                  // been picked up - it's in the service company's physical
-                  // possession by then.
                   if (state.canCancel)
                     Padding(
                       padding: const EdgeInsets.only(top: 10),
@@ -274,12 +261,11 @@ class _StatusTrackerScreenState extends State<StatusTrackerScreen> {
         return at(r.returnedAt) ??
             'Car dropped back at ${r.pickupAddress} — review and pay.';
       case CarServiceStatus.cancelled:
-        return null; // never reached - step is always one of carServiceTrackableSteps
+        return null;
     }
   }
 }
 
-// ---- cancelled --------------------------------------------------
 class _CancelledCard extends StatelessWidget {
   const _CancelledCard({required this.request});
 
@@ -329,7 +315,6 @@ class _CancelledCard extends StatelessWidget {
   }
 }
 
-// ---- map -----------------------------------------------------------
 class _TrackerMap extends StatelessWidget {
   const _TrackerMap({required this.state, required this.request});
 
@@ -380,7 +365,6 @@ class _TrackerMap extends StatelessWidget {
   }
 }
 
-// ---- approval prompt ---------------------------------------------
 class _ApprovalCard extends StatelessWidget {
   const _ApprovalCard({required this.state, required this.pending});
 
@@ -514,7 +498,6 @@ class _ApprovalCard extends StatelessWidget {
   }
 }
 
-// ---- staff card -----------------------------------------------
 class _StaffCard extends StatelessWidget {
   const _StaffCard({required this.state, required this.request});
 
@@ -609,7 +592,6 @@ class _StaffCard extends StatelessWidget {
   }
 }
 
-// ---- centre card ---------------------------------------------
 class _CentreCard extends StatelessWidget {
   const _CentreCard({required this.state});
 
@@ -655,7 +637,6 @@ class _CentreCard extends StatelessWidget {
   }
 }
 
-// ---- read-only task line ------------------------------------
 class _TaskLine extends StatelessWidget {
   const _TaskLine({required this.task});
 
@@ -755,7 +736,6 @@ class _TaskLine extends StatelessWidget {
   }
 }
 
-// ---- photo gallery -----------------------------------------
 class _PhotoGallery extends StatelessWidget {
   const _PhotoGallery({required this.photos});
 
@@ -824,7 +804,6 @@ class _PhotoGallery extends StatelessWidget {
   }
 }
 
-// ---- cost box ---------------------------------------------
 class _CostBox extends StatelessWidget {
   const _CostBox({required this.state, required this.request});
 
@@ -887,7 +866,6 @@ class _CostBox extends StatelessWidget {
   }
 }
 
-// ---- timeline step (also used by staff detail) --------------
 class _Step extends StatelessWidget {
   const _Step({
     required this.label,

@@ -8,15 +8,6 @@ import '../../account/providers/account_provider.dart';
 import '../providers/booking_provider.dart';
 import 'searching_screen.dart';
 
-// Shared payment-success screen for both the booking flow and the car-service
-// review-and-pay flow. `isBooking` decides whether the CTA continues to the
-// driver search or returns home.
-//
-// For the booking flow, this is the deliberate second step of the "pay, then
-// search" split (CLAUDE.md feedback): payment happened back on Confirm & Pay,
-// but the booking row that makes the trip visible to drivers is only created
-// here, when the passenger actively taps "Find my driver" - not as a side
-// effect of paying.
 class PaymentSuccessScreen extends StatefulWidget {
   const PaymentSuccessScreen({
     super.key,
@@ -50,7 +41,6 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
       return;
     }
 
-    // Refresh receipts so the Profile spend summary is current.
     context.read<AccountProvider>().refreshReceipts();
 
     Navigator.of(context).pushReplacement(

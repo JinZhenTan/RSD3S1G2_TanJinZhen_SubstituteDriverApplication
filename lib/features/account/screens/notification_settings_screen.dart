@@ -7,8 +7,6 @@ import '../../../core/widgets/tr.dart';
 import '../../../models/notification_settings.dart';
 import '../providers/account_provider.dart';
 
-// Module 4 - Notification settings. Account-level toggles persisted to the
-// Supabase `notification_settings` table (they follow the user across devices).
 class NotificationSettingsScreen extends StatelessWidget {
   const NotificationSettingsScreen({super.key});
 

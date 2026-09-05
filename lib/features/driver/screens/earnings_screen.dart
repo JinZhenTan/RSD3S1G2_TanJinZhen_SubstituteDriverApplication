@@ -12,10 +12,6 @@ import '../providers/driver_provider.dart';
 import '../services/earnings_exporter.dart';
 import 'driver_job_detail_screen.dart';
 
-// Module 4 (driver role) - Earnings. Replaces "Payment methods" on the
-// driver's Profile tab: a basic salary + per-trip earnings breakdown for a
-// selected month (defaults to the current month), plus the trip list behind
-// the numbers.
 class EarningsScreen extends StatefulWidget {
   const EarningsScreen({super.key});
 
@@ -178,10 +174,6 @@ class _MonthSelector extends StatelessWidget {
   }
 }
 
-// The CSV/PDF export button on the earnings summary card, exporting the
-// currently-selected month's completed trips - "a real export, not just a
-// placeholder button" (CLAUDE.md), same requirement as the passenger's
-// receipts export but for a driver's own trip log.
 class _ExportButton extends StatelessWidget {
   const _ExportButton({required this.trips, required this.month});
 
@@ -262,9 +254,6 @@ class _TripRow extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 10),
       child: InkWell(
         onTap: () {
-          // A trip still in progress (rare - the current month can include a
-          // job the driver hasn't finished yet) opens their live active-job
-          // screen instead of the static history view.
           final stillActive = !bookingIsHistory(booking.status) &&
               context.read<DriverProvider>().activeJob?.id == booking.id;
           Navigator.of(context).push(

@@ -11,11 +11,6 @@ import '../providers/service_staff_provider.dart';
 import 'service_stage_list_screen.dart';
 import 'staff_earnings_screen.dart';
 
-// Service staff role - Home tab. Same dashboard pattern as the passenger and
-// driver Home tabs: a navy hero (greeting + weather banner) and a "Quick
-// actions" grid - here, one tile per job stage (Pickup / Service / Return).
-// Each tile opens a list scoped to only the jobs at that stage; there is no
-// combined job list on this page itself.
 class ServiceRequestsScreen extends StatelessWidget {
   const ServiceRequestsScreen({super.key});
 
@@ -106,7 +101,6 @@ class ServiceRequestsScreen extends StatelessWidget {
   }
 }
 
-// ---- hero ------------------------------------------------------------
 class _Hero extends StatelessWidget {
   const _Hero({
     required this.name,
@@ -208,7 +202,6 @@ class _Hero extends StatelessWidget {
   }
 }
 
-// ---- quick-action tile (same look as the passenger/driver Home tiles) --
 class _Tile extends StatelessWidget {
   const _Tile({
     required this.icon,

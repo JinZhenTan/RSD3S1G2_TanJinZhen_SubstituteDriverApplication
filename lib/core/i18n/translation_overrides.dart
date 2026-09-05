@@ -1,12 +1,3 @@
-// Hand-picked corrections for UI terms the machine translator gets wrong in
-// context - e.g. "Save" comes back as 节省 / "economise" instead of 保存 /
-// "store a copy", and "Profile" as 轮廓 / "silhouette" instead of 我的 /
-// "my account".
-//
-// PreferencesProvider.t() checks this map BEFORE the download cache, so an
-// entry here always wins (and needs no network call). Keys must match the
-// exact English string passed to Tr() / context.tr(); language keys are the
-// same codes as TranslationService.languageCodes.
 const Map<String, Map<String, String>> translationOverrides = {
   'ms': {
     'Save': 'Simpan',

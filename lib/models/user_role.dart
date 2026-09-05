@@ -1,8 +1,5 @@
-// The three account roles. Stored as text in profiles.role and used by the
-// AuthGate to decide which app shell to show after sign-in.
 enum UserRole { user, driver, serviceStaff }
 
-// Text label shown on the sign-up role picker.
 String userRoleLabel(UserRole role) {
   switch (role) {
     case UserRole.user:
@@ -14,7 +11,6 @@ String userRoleLabel(UserRole role) {
   }
 }
 
-// Convert to / from the database text value.
 String userRoleToName(UserRole role) {
   switch (role) {
     case UserRole.user:

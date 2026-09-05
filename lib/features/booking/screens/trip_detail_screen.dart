@@ -16,9 +16,6 @@ import '../../../models/profile.dart';
 import '../../../models/route_result.dart';
 import 'activity_chat_screen.dart';
 
-// Module 1 - Trip Detail. Opened from an Activity row: a read-only summary of
-// one trip (route, status, fare, driver). Chat history lives one tap further
-// in, behind the "Chat history" button, rather than opening directly.
 class TripDetailScreen extends StatefulWidget {
   const TripDetailScreen({super.key, required this.booking});
 

@@ -1,12 +1,5 @@
 import 'profile.dart';
 
-// The substitute driver shown on the passenger's Trip Tracking screen. Built
-// from the assigned driver's profile row once a real driver accepts the
-// booking, or from a local placeholder in simulation mode.
-//
-// A substitute driver does NOT bring a vehicle - they drive the passenger's
-// own car - so there is no plate / vehicle info here, only the driver's
-// identity, rating and trip count.
 class Driver {
   final String id;
   final String name;

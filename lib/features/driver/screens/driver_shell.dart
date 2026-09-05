@@ -13,11 +13,6 @@ import '../providers/driver_provider.dart';
 import 'driver_jobs_screen.dart';
 import 'earnings_screen.dart';
 
-// App shell for the 'driver' role. Same 4 tabs as the passenger app
-// (Home / Activity / Notification / Profile), so a driver also gets the
-// weather, activity and full account-management modules. The only difference
-// is the first Home quick action: "Find a Driver" becomes "Available
-// bookings", which opens the accept queue (DriverJobsScreen).
 class DriverShell extends StatefulWidget {
   const DriverShell({super.key});
 

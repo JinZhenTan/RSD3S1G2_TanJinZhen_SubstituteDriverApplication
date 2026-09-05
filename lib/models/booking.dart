@@ -1,24 +1,11 @@
-// Models for Module 1 (Substitute Driver Booking).
 
-// A service tier shown as a chip on the Find a Driver screen. Each tier has
-// its own flagfall and per-km rate, used by the fare calculator. Written as a
-// small model class (like the Item class in the state-management practical)
-// with a fixed set of instances.
-//
-// Renamed from the prototype's ride-hailing-style "Standard / Off-peak /
-// Business / Hourly" chips (CLAUDE.md feedback): off-peak/peak is a
-// time-of-day condition, not something a passenger should "select", and
-// "Business" implied a nicer vehicle when the car never changes here - the
-// substitute driver always drives the passenger's own car. The replacements
-// below vary the thing that actually can vary in this service: the scenario
-// (late night) and the driver's experience level.
 class ServiceTier {
   final String name;
   final String label;
   final String rateLabel;
-  final String description; // shown under the chips so the choice is explained
-  final double flagfall; // covers the first 10 km
-  final double perKm; // charged on every km beyond the first 10
+  final String description;
+  final double flagfall;
+  final double perKm;
 
   const ServiceTier({
     required this.name,
@@ -78,20 +65,8 @@ class ServiceTier {
   }
 }
 
-// The state a booking is in. searching -> enRoute while the (simulated) driver
-// approaches, onTrip once moving, then arrived once the driver reports
-// reaching the destination.
-//
-// arrived is deliberately not the same as completed: only the passenger's
-// confirmation (or, as a fallback, a driver force-complete with a logged
-// reason - see Booking.completedBy/completionNote) moves a trip to completed.
-// This stops a driver from unilaterally closing out a trip on their own.
 enum BookingStatus { searching, enRoute, onTrip, arrived, completed, cancelled }
 
-// True once a trip can no longer change - nothing left to track live and no
-// further action possible. Used to route an Activity/Home tap to the static,
-// read-only Trip Detail screen (history) instead of the live Trip Tracking
-// screen (still in progress), and to lock the trip's chat once it is history.
 bool bookingIsHistory(BookingStatus status) =>
     status == BookingStatus.completed || status == BookingStatus.cancelled;
 
@@ -112,7 +87,6 @@ String bookingStatusLabel(BookingStatus status) {
   }
 }
 
-// Model class for a row of the Supabase 'bookings' table.
 class Booking {
   final String id;
   final String userId;
@@ -129,22 +103,13 @@ class Booking {
   final String paymentMethod;
   final String paymentStatus;
   final BookingStatus status;
-  // Which of the passenger's (possibly several) registered cars this trip
-  // is for - the driver looks this up to know which car to meet.
   final String? vehicleId;
-  final double? driverLat; // live driver position, pushed by the driver app
+  final double? driverLat;
   final double? driverLng;
-  final double? driverStartLat; // where the driver was when they accepted
-  final double? driverStartLng; // (drives the "driver -> pickup" route line)
-  // Who moved the trip to completed - 'passenger' (the normal path, tapped
-  // from Trip Tracking) or 'driver' (force-completed because the passenger
-  // could not confirm - see completionNote for the required reason).
+  final double? driverStartLat;
+  final double? driverStartLng;
   final String? completedBy;
   final String? completionNote;
-  // Why the passenger cancelled after a driver was already matched - required
-  // in that case since the trip was already paid for (see BookingProvider
-  // .cancelActiveBooking). Null for a cancellation made while still
-  // searching (no driver committed yet, so no reason is asked for).
   final String? cancellationReason;
   final DateTime createdAt;
 
@@ -206,7 +171,6 @@ class Booking {
     );
   }
 
-  // Column values sent to Supabase on insert (id / created_at are generated).
   Map<String, dynamic> toMap() {
     return {
       'user_id': userId,
@@ -229,7 +193,6 @@ class Booking {
 
   String get routeLabel => '$pickupAddress → $destAddress';
 
-  // Returns a copy with some fields changed (used after a status update).
   Booking copyWith({
     String? driverId,
     BookingStatus? status,

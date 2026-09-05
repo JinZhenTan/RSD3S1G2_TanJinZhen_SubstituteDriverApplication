@@ -1,8 +1,3 @@
-// Model class for a row of the Supabase 'service_photos' table (Module 3).
-//
-// Before / after / in-progress photos of the car, taken by the staff and shown
-// to the owner. This is the trust piece: the owner isn't there when the car is
-// collected, so a photographed record of its condition protects both sides.
 enum ServicePhotoPhase { pickup, work, ret }
 
 ServicePhotoPhase servicePhotoPhaseFromName(String? name) {

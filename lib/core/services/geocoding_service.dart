@@ -5,9 +5,6 @@ import 'package:latlong2/latlong.dart';
 
 import '../../models/place.dart';
 
-// Address search and reverse geocoding using OSM's Nominatim API.
-// Nominatim asks for a real User-Agent and no more than one request per
-// second, so callers debounce the search box and we keep a small cache.
 class GeocodingService {
   static final GeocodingService _instance = GeocodingService._internal();
   factory GeocodingService() => _instance;
@@ -19,7 +16,6 @@ class GeocodingService {
 
   final Map<String, List<Place>> _cache = {};
 
-  // Text -> list of candidate places, biased to Malaysia.
   Future<List<Place>> search(String query) async {
     final q = query.trim();
     if (q.length < 3) return [];
@@ -50,8 +46,6 @@ class GeocodingService {
     }
   }
 
-  // Coordinate -> a human-readable address (used by the "drop a pin" and
-  // "use GPS" location pickers).
   Future<String> reverse(LatLng point) async {
     final url = Uri.parse(
       '$baseUrl/reverse?lat=${point.latitude}&lon=${point.longitude}'

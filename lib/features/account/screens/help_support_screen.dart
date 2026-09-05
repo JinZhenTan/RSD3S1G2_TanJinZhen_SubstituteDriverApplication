@@ -6,11 +6,9 @@ import '../../../core/widgets/primary_button.dart';
 import '../../../core/widgets/screen_header.dart';
 import '../../../core/widgets/tr.dart';
 
-// Module 4 - Help & support. A static FAQ list plus a contact button.
 class HelpSupportScreen extends StatelessWidget {
   const HelpSupportScreen({super.key});
 
-  // Each map has a 'q' (question) and an 'a' (answer).
   static const List<Map<String, String>> faqs = [
     {
       'q': 'How is the fare calculated?',

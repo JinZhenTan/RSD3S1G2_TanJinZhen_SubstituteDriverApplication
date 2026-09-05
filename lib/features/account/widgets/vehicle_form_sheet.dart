@@ -6,13 +6,6 @@ import '../../../core/widgets/tr.dart';
 import '../../../models/vehicle.dart';
 import '../providers/account_provider.dart';
 
-// Add / edit a vehicle. Shared by the "My vehicles" screen and Find a
-// Driver's vehicle picker, so a car can be added from either place with the
-// same form - a passenger shouldn't have to leave the booking flow and go to
-// Profile just to register their first car.
-//
-// Resolves to the saved Vehicle (so a caller like Find a Driver can select it
-// immediately), or null if the sheet was dismissed without saving.
 Future<Vehicle?> showVehicleFormSheet(
   BuildContext context,
   AccountProvider account, {

@@ -15,11 +15,6 @@ import '../../weather_safety/providers/weather_provider.dart';
 import '../providers/booking_provider.dart';
 import 'activity_chat_screen.dart';
 
-// Module 1 - Trip Tracking. Live driver location on an OSM map, ETA, the
-// driver card with the verified badge, and the share-trip toggle. The shared
-// weather banner appears above the map. In-trip requests to the driver go
-// through the chat (Message) instead of preset quick-command chips - one
-// real channel is enough.
 class TripTrackingScreen extends StatelessWidget {
   const TripTrackingScreen({super.key});
 
@@ -36,9 +31,6 @@ class TripTrackingScreen extends StatelessWidget {
 
     final pickup = LatLng(b.pickupLat, b.pickupLng);
     final dest = LatLng(b.destLat, b.destLng);
-    // Once you and the driver have met (onTrip / arrived / completed) the map
-    // is just the car and the destination - the pickup marker and the
-    // "driver coming to you" line drop away.
     final met = booking.tripStatus == BookingStatus.onTrip ||
         booking.tripStatus == BookingStatus.arrived ||
         booking.tripStatus == BookingStatus.completed;
@@ -60,9 +52,6 @@ class TripTrackingScreen extends StatelessWidget {
           ScreenHeader(
             eyebrow: _statusLabel(booking.tripStatus),
             title: b.routeLabel,
-            // A live booking is already under way - "back" should never
-            // step back into the booking-creation screens (search/pay), it
-            // should return to Home like Finish/Cancel already do.
             onBack: () => Navigator.of(context).popUntil((r) => r.isFirst),
           ),
           Padding(
@@ -179,11 +168,6 @@ class TripTrackingScreen extends StatelessWidget {
                 if (driver != null) _DriverCard(driver: driver, booking: b),
                 const SizedBox(height: 18),
                 const _ShareTripRow(),
-                // Cancelling is only offered before the driver has picked up
-                // the car (enRoute) - once onTrip the car is already out on
-                // the road with the driver, so this stops being a sensible
-                // self-service action. The booking was already paid for at
-                // Confirm & Pay, so a reason is required on the record.
                 if (booking.tripStatus == BookingStatus.enRoute) ...[
                   const SizedBox(height: 12),
                   TextButton(

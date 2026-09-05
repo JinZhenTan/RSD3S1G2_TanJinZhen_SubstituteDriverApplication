@@ -8,8 +8,6 @@ import '../../../core/widgets/tr.dart';
 import '../providers/booking_provider.dart';
 import 'payment_success_screen.dart';
 
-// Module 1 - Confirm & Pay. Read-only summary of the trip and fare, then the
-// single "Pay & find driver" action that creates the booking row + receipt.
 class ConfirmPayScreen extends StatefulWidget {
   const ConfirmPayScreen({super.key});
 
@@ -18,12 +16,6 @@ class ConfirmPayScreen extends StatefulWidget {
 }
 
 class _ConfirmPayScreenState extends State<ConfirmPayScreen> {
-  // Paying and starting the search are two separate steps (CLAUDE.md
-  // feedback): this screen only takes the payment. The booking row that
-  // makes the trip visible to drivers isn't created until the passenger
-  // explicitly taps "Find my driver" on the next screen - so a driver never
-  // sees (or could react to) a request the passenger hasn't actively started
-  // searching for yet.
   void _continue() {
     final booking = context.read<BookingProvider>();
     final fare = booking.fare;

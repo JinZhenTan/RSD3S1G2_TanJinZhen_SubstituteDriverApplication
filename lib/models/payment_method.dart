@@ -1,20 +1,12 @@
-// Model class for a row of the Supabase 'payment_methods' table.
-//
-// Only one row per 'type' is allowed per user (enforced by AccountProvider,
-// not the database - see the unique index note in supabase_schema.sql). A
-// card's full number and CVV are never stored - only the last 4 digits and
-// expiry, same as a real payment provider would return to the merchant after
-// tokenising the card. CVV is asked for on the form only to "authorise" the
-// card in this simulated flow and is discarded immediately.
 class PaymentMethod {
   final String id;
   final String userId;
-  final String type; // 'card', 'ewallet' or 'cash'
+  final String type;
   final String label;
   final bool isDefault;
-  final String? last4; // type == 'card' only
-  final String? expiry; // MM/YY, type == 'card' only
-  final String? cardholderName; // type == 'card' only
+  final String? last4;
+  final String? expiry;
+  final String? cardholderName;
 
   PaymentMethod({
     required this.id,
@@ -71,7 +63,6 @@ class PaymentMethod {
     );
   }
 
-  // Short badge text shown in the coloured card icon.
   String get badge {
     if (type == 'card') return 'CARD';
     if (type == 'ewallet') return 'TNG';

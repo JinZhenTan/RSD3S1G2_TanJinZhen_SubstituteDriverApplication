@@ -15,44 +15,28 @@ import '../../../models/service_task.dart';
 import '../../../models/vehicle.dart';
 import '../services/default_service_tasks.dart';
 
-// Module 3 state - the Car Service booking form draft, the list of requests,
-// and the status-tracker / review-and-pay flow.
-//
-// Assignment simplification for the assignment: there is no real
-// company-driver backend, so advanceStatus() acts as the admin / testing
-// toggle that pushes a request through the 5 steps, and the final cost is
-// generated when it reaches "Returned".
 class CarServiceProvider extends ChangeNotifier {
   String? get _userId => supabase.auth.currentUser?.id;
 
-  // ---- Booking form draft ----
   DateTime pickupDateTime = _defaultPickup();
-  // Empty until the owner actually picks a location (see SelectLocationScreen)
-  // - the form shows a neutral "Select pick-up location" placeholder rather
-  // than a fake pre-filled address that could get submitted unnoticed.
   String pickupAddress = '';
   LatLng? pickupPoint;
-  // A booking can cover more than one kind of service in the same visit
-  // (e.g. oil change + tyre rotation) - always at least one selected.
   List<CarServiceType> serviceTypes = [CarServiceType.general];
   String notes = '';
 
-  // ---- Data ----
   List<CarServiceRequest> requests = [];
   CarServiceRequest? active;
   bool isLoading = false;
 
-  // ---- Module 3: workshops, the assigned staff, the live checklist + photos
   List<ServiceCentre> serviceCentres = [];
   ServiceCentre? activeCentre;
   Profile? activeStaff;
   List<ServiceTask> tasks = [];
   List<ServicePhoto> photos = [];
 
-  // Map legs for the Status Tracker, same idea as the substitute-driver map.
   final _routing = RoutingService();
-  RouteResult? centreRoute; // owner's address <-> service centre
-  RouteResult? staffApproachRoute; // staff's start -> owner's address
+  RouteResult? centreRoute;
+  RouteResult? staffApproachRoute;
   LatLng? _staffStart;
 
   LatLng? get staffPosition {
@@ -68,8 +52,6 @@ class CarServiceProvider extends ChangeNotifier {
   StreamSubscription<List<Map<String, dynamic>>>? _tasksSub;
   StreamSubscription<List<Map<String, dynamic>>>? _photosSub;
 
-  // Billable line items = included + owner-approved. This is the live final
-  // cost the owner will pay.
   double get billableTotal =>
       tasks.where((t) => t.isBillable).fold(0.0, (s, t) => s + t.price);
 
@@ -90,8 +72,6 @@ class CarServiceProvider extends ChangeNotifier {
     }
   }
 
-  // Watch the selected request live so the passenger's Status Tracker updates
-  // as the service partner advances the status or sends the final cost.
   void subscribeToActiveRequest() {
     final request = active;
     if (request == null) return;
@@ -201,11 +181,6 @@ class CarServiceProvider extends ChangeNotifier {
     }
   }
 
-  // The owner's decision on a piece of extra work the staff proposed. Applies
-  // the change to local state immediately rather than waiting on the
-  // realtime echo, which isn't always delivered back to the same client that
-  // wrote it - so the owner's own screen (and the staff's, once they see
-  // this task update via their own subscription) reflect it right away.
   Future<void> respondToExtra(ServiceTask task, bool approved) async {
     try {
       final newApproval = approved ? TaskApproval.approved : TaskApproval.declined;
@@ -216,7 +191,6 @@ class CarServiceProvider extends ChangeNotifier {
           .map((t) => t.id == task.id ? t.copyWith(approval: newApproval) : t)
           .toList();
       notifyListeners();
-      // Keep the request's final_cost in step with the new billable set.
       final request = active;
       if (request != null) {
         final newTotal =
@@ -248,8 +222,6 @@ class CarServiceProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Toggles one service type in/out of the draft's selection. At least one
-  // must stay selected, so a lone selected type can't be tapped off.
   void toggleServiceType(CarServiceType value) {
     final selected = serviceTypes.contains(value);
     if (selected && serviceTypes.length == 1) return;
@@ -259,9 +231,6 @@ class CarServiceProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Summed across every selected type - each contributes its own estimate
-  // range and its own seeded checklist (see defaultServiceTasks), so the
-  // price genuinely adds up rather than only reflecting one service.
   int get estimateMin => serviceTypes.fold(0, (s, t) => s + t.estimateMin);
   int get estimateMax => serviceTypes.fold(0, (s, t) => s + t.estimateMax);
 
@@ -299,8 +268,6 @@ class CarServiceProvider extends ChangeNotifier {
         (inserted as List).first as Map<String, dynamic>,
       );
 
-      // Seed the task checklist from the booked service type. The staff ticks
-      // these off and adds any extra work they find on inspection.
       try {
         await supabase
             .from('service_tasks')
@@ -359,10 +326,6 @@ class CarServiceProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Demo / testing toggle - stands in for a real service partner when the
-  // owner is running the app solo. Advances one step, stamps the timeline, and
-  // on "Returned" marks every task done and sets the final cost to the sum of
-  // the billable tasks.
   Future<void> advanceStatus() async {
     final request = active;
     if (request == null) return;
@@ -395,9 +358,6 @@ class CarServiceProvider extends ChangeNotifier {
 
     try {
       if (next == CarServiceStatus.returning) {
-        // The service work is done as of this step - auto-approve any
-        // still-pending extras and tick everything off, then lock in the
-        // final cost, same as the real staff flow does.
         for (final t in tasks) {
           final patch = <String, dynamic>{
             'is_done': true,
@@ -430,10 +390,6 @@ class CarServiceProvider extends ChangeNotifier {
     }
   }
 
-  // The owner can still cancel once a service partner has been assigned and
-  // is on the way, same rule as cancelling a substitute-driver trip - just
-  // not once the car has actually been picked up (it's now in the company's
-  // physical possession). A reason is required for the record.
   bool get canCancel {
     final r = active;
     return r != null &&
@@ -462,9 +418,6 @@ class CarServiceProvider extends ChangeNotifier {
     }
   }
 
-  // The final-cost breakdown shown on the Status Tracker and Review & Pay.
-  // Prefers the real task checklist; falls back to the legacy 4-way split (or
-  // a generated one) for rows created before the checklist existed.
   Map<String, double> itemisedFinalCost(CarServiceRequest request) {
     final billable = tasks.where((t) => t.isBillable).toList();
     if (billable.isNotEmpty) {
@@ -491,8 +444,6 @@ class CarServiceProvider extends ChangeNotifier {
     };
   }
 
-  // Used by the demo status toggle when there is no real service partner to
-  // enter line items.
   Map<String, double> _generateItemisedCost(CarServiceType type) {
     final mid = (type.estimateMin + type.estimateMax) / 2;
     final workTotal = _round(mid * 0.9) - 45;

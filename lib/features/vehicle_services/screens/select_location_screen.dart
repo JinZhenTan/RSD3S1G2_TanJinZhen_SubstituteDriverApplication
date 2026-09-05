@@ -12,8 +12,6 @@ import '../../../models/place.dart';
 import '../providers/car_service_provider.dart';
 import 'pick_map_screen.dart';
 
-// Module 3 - Pick-up location method picker. Three sub-flows, exactly like the
-// prototype: current GPS location, drop a pin on the map, or type the address.
 class SelectLocationScreen extends StatefulWidget {
   const SelectLocationScreen({super.key});
 

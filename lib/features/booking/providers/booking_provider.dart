@@ -15,33 +15,23 @@ import '../../../models/vehicle.dart';
 import '../../../models/weather_alert.dart';
 import '../services/fare_calculator.dart';
 
-// Module 1 state - the whole "Find a Driver" flow plus the Activity list.
-//
-// A booking is created unassigned. If a real 'driver' account accepts it the
-// passenger's screens follow the live row via Supabase Realtime. If no driver
-// accepts within a few seconds, a local simulation drives the trip so a solo
-// demo still works (documented assumption for the assignment).
 class BookingProvider extends ChangeNotifier {
   final _routing = RoutingService();
 
   String? get _userId => supabase.auth.currentUser?.id;
 
-  // ---- Draft being built on the Find a Driver screen ----
   LatLng? pickup;
   String pickupAddress = '';
   LatLng? destination;
   String destAddress = '';
   ServiceTier tier = ServiceTier.standard;
   String paymentLabel = 'Cash';
-  // Which of the passenger's (possibly several) cars the driver will drive -
-  // defaults to their default vehicle, changeable on Find a Driver.
   Vehicle? selectedVehicle;
 
   RouteResult? tripRoute;
   FareBreakdown? fare;
   bool routeLoading = false;
 
-  // ---- The active booking (after payment) ----
   Booking? activeBooking;
   Driver? activeDriver;
   RouteResult? driverApproachRoute;
@@ -52,11 +42,8 @@ class BookingProvider extends ChangeNotifier {
 
   Timer? _simTimer;
   StreamSubscription<List<Map<String, dynamic>>>? _bookingSub;
-  // The driver's start -> pickup route is fetched once, the first time the
-  // live row carries the driver's start position.
   bool _approachRequested = false;
 
-  // ---- Activity tab ----
   List<Booking> pastBookings = [];
   List<CarServiceRequest> pastServiceRequests = [];
 
@@ -92,7 +79,6 @@ class BookingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Fetch the OSRM route and recompute the fare whenever the trip changes.
   Future<void> _recalculate({List<WeatherAlert> alerts = const []}) async {
     if (pickup == null || destination == null) return;
     routeLoading = true;
@@ -105,8 +91,6 @@ class BookingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Public entry so screens can pass the current weather alerts in for the
-  // wet-weather surcharge.
   Future<void> recalculateWithAlerts(List<WeatherAlert> alerts) {
     return _recalculate(alerts: alerts);
   }
@@ -120,7 +104,6 @@ class BookingProvider extends ChangeNotifier {
     );
   }
 
-  // Create the (unassigned) booking row, take payment and write a receipt.
   Future<Booking?> confirmAndPay() async {
     final userId = _userId;
     if (userId == null ||
@@ -130,9 +113,6 @@ class BookingProvider extends ChangeNotifier {
       return null;
     }
 
-    // Cancel any earlier still-searching booking by this user first, so there
-    // is never more than one live request (e.g. after the app was killed
-    // mid-search, or a cancel that did not persist).
     try {
       await supabase
           .from('bookings')
@@ -190,12 +170,6 @@ class BookingProvider extends ChangeNotifier {
     }
   }
 
-  // Open a still-in-progress trip from Activity or the Home "last trip" card
-  // (rather than the normal confirmAndPay -> Searching -> Trip Tracking
-  // flow). Hydrates the driver/route/live-position state Trip Tracking needs
-  // from the row itself, then follows it live the same way, so e.g. a
-  // driver's force-complete is reflected immediately instead of the screen
-  // showing a one-time snapshot.
   Future<void> resumeTrip(Booking booking) async {
     simulationMode = false;
     _approachRequested = false;
@@ -203,9 +177,6 @@ class BookingProvider extends ChangeNotifier {
     subscribeToActiveBooking();
   }
 
-  // Watch the booking row live. When a real driver accepts it, sync the driver
-  // + status + live position from the row (unless the simulation already owns
-  // the trip).
   void subscribeToActiveBooking() {
     final booking = activeBooking;
     if (booking == null) return;
@@ -221,10 +192,6 @@ class BookingProvider extends ChangeNotifier {
         });
   }
 
-  // Apply a live booking-row update from a real driver: their position, the
-  // driver profile, and the two route legs the map needs -
-  //   driverApproachRoute : driver's start -> pickup  (shown while enRoute)
-  //   tripRoute           : pickup -> destination     (shown throughout)
   Future<void> _syncFromRow(Booking updated) async {
     activeBooking = updated;
     tripStatus = updated.status;
@@ -251,7 +218,6 @@ class BookingProvider extends ChangeNotifier {
       );
     }
 
-    // Rough ETA from whichever leg is being driven now.
     if (tripStatus == BookingStatus.onTrip) {
       etaMinutes = (tripRoute?.durationMinutes ?? 0).clamp(1, 90);
     } else if (tripStatus == BookingStatus.enRoute) {
@@ -277,11 +243,9 @@ class BookingProvider extends ChangeNotifier {
     }
   }
 
-  // No real driver accepted in time - run the trip locally so the demo works.
   Future<void> runSimulationFallback() async {
     final booking = activeBooking;
     if (booking == null || simulationMode) return;
-    // A real driver already picked it up - let the live row drive the trip.
     if (activeDriver != null ||
         booking.driverId != null ||
         tripStatus != BookingStatus.searching) {
@@ -320,9 +284,6 @@ class BookingProvider extends ChangeNotifier {
     _simTimer = Timer.periodic(const Duration(milliseconds: 900), (timer) {
       if (i >= path.length) {
         timer.cancel();
-        // Parked at the destination - wait for the passenger to tap "Confirm
-        // trip completed" (confirmTripCompleted below) rather than
-        // auto-completing, same rule as a real driver's trip.
         tripStatus = BookingStatus.arrived;
         _updateStatus(BookingStatus.arrived);
         notifyListeners();
@@ -353,11 +314,6 @@ class BookingProvider extends ChangeNotifier {
     }
   }
 
-  // reason is required once a driver has been matched (enRoute or later) -
-  // the trip was already paid for at that point, so cancelling needs an
-  // explanation on the record, same as a driver's forceCompleteJob. It's
-  // optional while still searching, since no driver has committed to the
-  // trip yet.
   Future<void> cancelActiveBooking({String? reason}) async {
     _simTimer?.cancel();
     await _bookingSub?.cancel();
@@ -377,7 +333,6 @@ class BookingProvider extends ChangeNotifier {
         if ((rows as List).isEmpty) {
           print('cancelActiveBooking: row not updated (RLS?) id=${booking.id}');
         }
-        // Keep the Activity list in sync so the cancelled trip shows there.
         pastBookings = pastBookings
             .map((b) => b.id == booking.id
                 ? b.copyWith(
@@ -400,12 +355,6 @@ class BookingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Called from Trip Tracking when the driver has reported 'arrived' and the
-  // passenger taps "Confirm trip completed". This - not the driver - is what
-  // normally closes out a trip, so a driver alone can't mark a trip done
-  // without the passenger's say-so (a driver who genuinely can't get that
-  // confirmation, e.g. an intoxicated passenger, uses the separate
-  // DriverProvider.forceCompleteJob path instead, which requires a reason).
   Future<void> confirmTripCompleted() async {
     final booking = activeBooking;
     if (booking == null || tripStatus != BookingStatus.arrived) return;
@@ -425,8 +374,6 @@ class BookingProvider extends ChangeNotifier {
     }
   }
 
-  // Called from Trip Tracking once the trip is completed - clears the active
-  // trip and refreshes the Activity list so it shows the final status.
   Future<void> finishActiveTrip() async {
     _simTimer?.cancel();
     await _bookingSub?.cancel();
@@ -442,7 +389,6 @@ class BookingProvider extends ChangeNotifier {
     await loadActivity();
   }
 
-  // Swap the active trip's route for the safer alternative (Module 2).
   void applySafeRoute(RouteResult safeRoute) {
     tripRoute = safeRoute;
     notifyListeners();
@@ -485,9 +431,6 @@ class BookingProvider extends ChangeNotifier {
     final userId = _userId;
     if (userId == null) return;
     try {
-      // A booking's user_id is the passenger and driver_id is whoever drove
-      // it, so this one query covers both: a passenger's own trips, or (for a
-      // driver account) the trips they drove for someone else.
       final bookingRows = await supabase
           .from('bookings')
           .select()

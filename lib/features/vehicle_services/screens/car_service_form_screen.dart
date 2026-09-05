@@ -15,9 +15,6 @@ import 'select_location_screen.dart';
 import 'select_service_type_screen.dart';
 import 'status_tracker_screen.dart';
 
-// Module 3 - Car Service booking form. A company driver collects the car
-// (owner NOT present), services it, and returns it; payment happens AFTER
-// return, so this screen only shows an estimate range.
 class CarServiceFormScreen extends StatefulWidget {
   const CarServiceFormScreen({super.key});
 
@@ -29,8 +26,6 @@ class _CarServiceFormScreenState extends State<CarServiceFormScreen> {
   final _notesController = TextEditingController();
   final _phoneController = TextEditingController();
   bool _submitting = false;
-  // Which of the user's (possibly several) registered cars this request is
-  // for - defaults to their default vehicle but can be changed below.
   Vehicle? _selectedVehicle;
 
   @override
@@ -42,8 +37,6 @@ class _CarServiceFormScreenState extends State<CarServiceFormScreen> {
     _selectedVehicle = account.defaultVehicle;
   }
 
-  // Always actionable, even with zero vehicles registered - same reasoning
-  // as Find a Driver's picker.
   Future<void> _pickVehicle() async {
     final account = context.read<AccountProvider>();
     final chosen = await showModalBottomSheet<Vehicle>(
@@ -128,8 +121,6 @@ class _CarServiceFormScreenState extends State<CarServiceFormScreen> {
 
     setState(() => _submitting = true);
     try {
-      // A vehicle is required - there is nothing for the service partner to
-      // collect otherwise.
       if (_selectedVehicle == null) {
         messenger.showSnackBar(const SnackBar(
           content: Text('Select which vehicle this booking is for.'),
@@ -137,8 +128,6 @@ class _CarServiceFormScreenState extends State<CarServiceFormScreen> {
         return;
       }
 
-      // A contact number is required - the service partner needs to reach the
-      // owner about the car.
       final phone = _phoneController.text.trim();
       if (phone.isEmpty) {
         messenger.showSnackBar(const SnackBar(
@@ -153,8 +142,6 @@ class _CarServiceFormScreenState extends State<CarServiceFormScreen> {
         );
       }
 
-      // The owner must actually pick a location - no silent fallback to a
-      // placeholder address.
       if (state.pickupAddress.trim().isEmpty) {
         messenger.showSnackBar(const SnackBar(
           content: Text('Select a pick-up location.'),
@@ -162,8 +149,6 @@ class _CarServiceFormScreenState extends State<CarServiceFormScreen> {
         return;
       }
 
-      // The pick-up must resolve to a coordinate so the driver can navigate to
-      // it and it can show on the map. Geocode a typed address if needed.
       if (state.pickupPoint == null) {
         final results = await GeocodingService().search(state.pickupAddress);
         if (results.isNotEmpty) {

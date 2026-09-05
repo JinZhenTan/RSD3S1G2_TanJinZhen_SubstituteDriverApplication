@@ -9,8 +9,6 @@ import '../../../models/receipt.dart';
 import '../services/receipt_exporter.dart';
 import '../providers/account_provider.dart';
 
-// Module 4 - Activity & Receipts. Monthly spend summary + a real CSV / PDF
-// export of the receipt list(a specifically requested feature).
 class ReceiptsScreen extends StatelessWidget {
   const ReceiptsScreen({super.key});
 

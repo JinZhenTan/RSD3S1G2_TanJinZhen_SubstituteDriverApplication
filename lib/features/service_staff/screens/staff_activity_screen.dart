@@ -11,10 +11,6 @@ import 'service_centre_screen.dart';
 import 'service_pickup_screen.dart';
 import 'service_return_screen.dart';
 
-// Service staff role - Profile > Activity. Same look as the passenger/
-// driver Activity tab (navy header + All / In progress / Completed segmented
-// filter + card rows) but showing the staff's own work history - the car
-// service jobs they've accepted - instead of trip bookings or receipts.
 class StaffActivityScreen extends StatefulWidget {
   const StaffActivityScreen({super.key});
 
@@ -23,7 +19,7 @@ class StaffActivityScreen extends StatefulWidget {
 }
 
 class _StaffActivityScreenState extends State<StaffActivityScreen> {
-  int _filter = 0; // 0 = all, 1 = in progress, 2 = completed
+  int _filter = 0;
 
   bool _matches(CarServiceRequest r) {
     if (_filter == 0) return true;
@@ -35,7 +31,6 @@ class _StaffActivityScreenState extends State<StaffActivityScreen> {
   Widget build(BuildContext context) {
     final staff = context.watch<ServiceStaffProvider>();
     final myId = staff.currentUserId;
-    // Only jobs actually accepted by this staff member - not the open queue.
     final jobs = staff.requests
         .where((r) => r.driverId == myId)
         .where(_matches)

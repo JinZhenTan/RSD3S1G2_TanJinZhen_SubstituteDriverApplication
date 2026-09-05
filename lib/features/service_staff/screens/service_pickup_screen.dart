@@ -14,14 +14,6 @@ import '../../../models/service_photo.dart';
 import '../providers/service_staff_provider.dart';
 import 'service_staff_widgets.dart';
 
-// Service staff role - PAGE 1 of 2: the pickup process, opened from the
-// "Pickup" button on a job's card in the Requests tab (the staff's home).
-//   - drive to the owner's address, collect the car (pick-up photos)
-//   - drive it to the (single, fixed) service centre
-//   - tap "Car is in the service centre" once it's dropped off, then head
-//     back to the Requests tab - the now-unlocked "Service" button there is
-//     PAGE 2 (ServiceCentreScreen), for the actual service work. There is
-//     nothing to tick off here, only pick-up/drop-off.
 class ServicePickupScreen extends StatefulWidget {
   const ServicePickupScreen({super.key});
 
@@ -52,7 +44,6 @@ class _ServicePickupScreenState extends State<ServicePickupScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
-  // ---- photos ---------------------------------------------------
   Future<void> _addPhoto() async {
     final source = await showModalBottomSheet<String>(
       context: context,
@@ -111,7 +102,6 @@ class _ServicePickupScreenState extends State<ServicePickupScreen> {
     }
   }
 
-  // ---- advance ---------------------------------------------------
   String _actionLabel(CarServiceStatus phase) {
     switch (phase) {
       case CarServiceStatus.assigned:
@@ -129,8 +119,6 @@ class _ServicePickupScreenState extends State<ServicePickupScreen> {
     await _staff.advanceStatus();
     if (!mounted) return;
     setState(() => _busy = false);
-    // Dropped the car off at the centre - the pickup process is done. Back
-    // to the Requests tab, where the "Service" button is now unlocked.
     if (wasPickedUp && _staff.active?.status == CarServiceStatus.atCentre) {
       _toast('Car marked as at the service centre');
       Navigator.of(context).pop();
@@ -203,8 +191,6 @@ class _ServicePickupScreenState extends State<ServicePickupScreen> {
                 ),
                 const SizedBox(height: 8),
 
-                // Once the car is at the centre (or beyond), the pickup
-                // process is done - nothing left to advance from here.
                 if (r.atCentreAt != null)
                   Container(
                     width: double.infinity,

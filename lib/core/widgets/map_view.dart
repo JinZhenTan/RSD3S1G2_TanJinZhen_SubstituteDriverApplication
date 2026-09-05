@@ -5,10 +5,6 @@ import 'package:latlong2/latlong.dart';
 import '../theme/app_theme.dart';
 import 'tr.dart';
 
-// A thin wrapper around flutter_map that renders OpenStreetMap raster tiles
-//(OSM via flutter_map, not Google Maps) with optional route
-// polylines and markers. Used by Find a Driver, Trip Tracking and the
-// car-service "drop a pin" screen.
 class MapView extends StatelessWidget {
   const MapView({
     super.key,
@@ -25,8 +21,8 @@ class MapView extends StatelessWidget {
 
   final LatLng centre;
   final double zoom;
-  final List<LatLng> routePoints; // pickup -> destination (blue)
-  final List<LatLng> driverRoutePoints; // driver -> pickup (dashed grey)
+  final List<LatLng> routePoints;
+  final List<LatLng> driverRoutePoints;
   final List<Marker> markers;
   final double height;
   final void Function(LatLng)? onTap;
@@ -95,7 +91,6 @@ class MapView extends StatelessWidget {
     );
   }
 
-  // Convenience builders for the coloured pin markers used across the app.
   static Marker pin(LatLng point, Color color, {IconData icon = Icons.place}) {
     return Marker(
       point: point,
@@ -122,10 +117,6 @@ class MapView extends StatelessWidget {
   }
 }
 
-// A small "what does each colour mean" strip for a MapView above/below it -
-// e.g. green = your car, red = destination, blue = driver. Both the
-// passenger's and the driver's map screens use this so either side can read
-// the other's position at a glance instead of guessing from an unlabelled pin.
 class MapLegend extends StatelessWidget {
   const MapLegend({super.key, required this.items});
 

@@ -1,17 +1,10 @@
-// Model class for a row of the Supabase 'activity_messages' table.
-// One chat message in a trip thread (booking) or a car service thread.
-// Delivered live with Supabase Realtime on the Activity Chat screen.
-//
-// A message is either text (`type` = 'text', `message` holds the text) or a
-// picture (`type` = 'image', `imageUrl` points at a public object in the
-// Supabase Storage 'chat-images' bucket; `message` may hold an optional caption).
 class ActivityMessage {
   final String id;
   final String? bookingId;
   final String? serviceRequestId;
   final String senderId;
-  final String senderType; // 'user' or 'driver'
-  final String type; // 'text' or 'image'
+  final String senderType;
+  final String type;
   final String message;
   final String? imageUrl;
   final DateTime createdAt;

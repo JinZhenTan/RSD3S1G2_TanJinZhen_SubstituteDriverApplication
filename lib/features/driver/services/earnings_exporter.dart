@@ -9,10 +9,6 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../models/booking.dart';
 
-// Real CSV / PDF export of a driver's completed-trip earnings log, mirroring
-// ReceiptExporter's approach for the passenger side (CLAUDE.md's requested
-// "real CSV or PDF export, not just a placeholder button", applied to the
-// driver role's own numbers instead of a passenger's spend).
 class EarningsExporter {
   static final DateFormat _dateFormat = DateFormat('yyyy-MM-dd HH:mm');
   static final NumberFormat _money =

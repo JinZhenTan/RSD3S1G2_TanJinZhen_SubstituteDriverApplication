@@ -7,9 +7,6 @@ import '../../../core/widgets/tr.dart';
 import '../providers/weather_provider.dart';
 import '../widgets/forecast_list.dart';
 
-// Module 2 - Weather Forecast (Practical 10). A standalone page: pick a
-// Malaysian state and see its 7-day data.gov.my forecast. The chosen state is
-// remembered with SharedPreferences by the provider.
 class WeatherForecastScreen extends StatefulWidget {
   const WeatherForecastScreen({super.key});
 

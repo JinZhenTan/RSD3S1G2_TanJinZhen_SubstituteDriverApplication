@@ -5,16 +5,15 @@ import 'package:provider/provider.dart';
 
 import '../../../supabase_config.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/location_search_screen.dart';
 import '../../../core/widgets/map_view.dart';
 import '../../../core/widgets/tr.dart';
 import '../../../models/booking.dart';
+import '../../../models/place.dart';
 import '../../../models/vehicle.dart';
 import '../providers/driver_provider.dart';
 import 'driver_job_detail_screen.dart';
 
-// Driver role - the accept queue, opened from the "Available bookings" tile
-// on the driver Home screen. Shows the driver's active booking (if any) and
-// the list of unassigned booking requests they can accept.
 class DriverJobsScreen extends StatelessWidget {
   const DriverJobsScreen({super.key});
 
@@ -75,9 +74,6 @@ class DriverJobsScreen extends StatelessWidget {
   }
 }
 
-// Dismissible banner shown when the passenger ended the active booking from
-// their side (cancelled it, or confirmed completion) while this driver
-// wasn't looking at the booking's own detail screen.
 class _EndedNotice extends StatelessWidget {
   const _EndedNotice({required this.booking});
 
@@ -194,11 +190,21 @@ class _RequestCard extends StatefulWidget {
 
 class _RequestCardState extends State<_RequestCard> {
   bool _accepting = false;
-  // Tapped on the map below - lets the driver set where they're starting
-  // from instead of relying on device GPS, so the app is easy to demo (a
-  // laptop or emulator has no real GPS near the pickup point). Null means
-  // "use my real location when I accept".
   LatLng? _myLocation;
+
+  Future<void> _searchLocation() async {
+    final place = await Navigator.of(context).push<Place>(
+      MaterialPageRoute(
+        builder: (_) => const LocationSearchScreen(
+          eyebrow: 'AVAILABLE BOOKINGS',
+          title: 'Your location',
+          allowCurrentLocation: true,
+        ),
+      ),
+    );
+    if (place == null || !mounted) return;
+    setState(() => _myLocation = place.position);
+  }
 
   Future<void> _accept() async {
     setState(() => _accepting = true);
@@ -246,11 +252,6 @@ class _RequestCardState extends State<_RequestCard> {
           const SizedBox(height: 8),
           _VehiclePreview(vehicleId: job.vehicleId),
           const SizedBox(height: 10),
-          // The passenger's current pickup point plus the destination, so a
-          // driver can judge the pickup distance and trip direction before
-          // committing - not just read two addresses as text. Tapping the
-          // map sets a starting point for this job instead of using device
-          // GPS (handy when presenting/demoing away from the real pickup).
           ClipRRect(
             borderRadius: BorderRadius.circular(14),
             child: MapView(
@@ -273,14 +274,24 @@ class _RequestCardState extends State<_RequestCard> {
             const MapLegendItem(AppColors.ok, 'Passenger'),
             const MapLegendItem(AppColors.danger, 'Destination'),
             if (_myLocation != null)
-              const MapLegendItem(AppColors.blue600, 'You (tapped)'),
+              const MapLegendItem(AppColors.blue600, 'You'),
           ]),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: _searchLocation,
+            icon: const Icon(Icons.search, size: 16),
+            label: Tr(_myLocation == null
+                ? 'Search my location'
+                : 'Change my location'),
+          ),
           const SizedBox(height: 4),
           Tr(
             _myLocation == null
-                ? 'Tap the map to set your starting point (optional - uses '
-                    'your real location otherwise)'
-                : 'Starting point set. Tap the map again to change it.',
+                ? 'Search, use your current location, or tap the map to set '
+                    'your starting point (optional - uses your real location '
+                    'otherwise)'
+                : 'Starting point set. Search again or tap the map to '
+                    'change it.',
             style: const TextStyle(fontSize: 9.5, color: AppColors.muted),
           ),
           const SizedBox(height: 12),
@@ -306,11 +317,6 @@ class _RequestCardState extends State<_RequestCard> {
   }
 }
 
-// Shows which car this booking is for before the driver even accepts, not
-// just after - so they know what to look for (plate, model, colour) while
-// deciding, and can spot it more easily once they arrive. RLS lets any
-// signed-in account read a vehicle row (drivers need to see the passenger's
-// car), so this is a plain one-off lookup per card.
 class _VehiclePreview extends StatefulWidget {
   const _VehiclePreview({required this.vehicleId});
 
@@ -353,8 +359,6 @@ class _VehiclePreviewState extends State<_VehiclePreview> {
   Widget build(BuildContext context) {
     if (_loading) return const SizedBox.shrink();
     final v = _vehicle;
-    // Older bookings made before vehicle selection was required may have no
-    // vehicle_id - fall back to a neutral notice rather than showing nothing.
     if (v == null) {
       return const Padding(
         padding: EdgeInsets.only(bottom: 2),

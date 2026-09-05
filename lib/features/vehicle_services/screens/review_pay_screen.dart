@@ -9,9 +9,6 @@ import '../../account/providers/account_provider.dart';
 import '../../booking/screens/payment_success_screen.dart';
 import '../providers/car_service_provider.dart';
 
-// Module 3 - Review & Pay. Shown only after the car is "Returned". Displays the
-// itemised final cost (labour + parts + inspection + transport) and takes
-// payment - the "estimate vs final" distinction the assignment brief calls for.
 class ReviewPayScreen extends StatefulWidget {
   const ReviewPayScreen({super.key});
 

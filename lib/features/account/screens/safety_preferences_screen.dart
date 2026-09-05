@@ -6,10 +6,6 @@ import '../../../core/widgets/screen_header.dart';
 import '../../../core/widgets/tr.dart';
 import '../providers/preferences_provider.dart';
 
-// Module 4 - Safety alert preferences. DEVICE-level toggles held in
-// PreferencesProvider (shared_preferences). They tune what the Notification
-// feed shows on this phone and whether the safe-route card auto-applies -
-// unlike account-level notification_settings in Supabase.
 class SafetyPreferencesScreen extends StatelessWidget {
   const SafetyPreferencesScreen({super.key});
 

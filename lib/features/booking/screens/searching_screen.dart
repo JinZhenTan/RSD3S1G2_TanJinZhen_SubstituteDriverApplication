@@ -9,9 +9,6 @@ import '../../../models/booking.dart';
 import '../providers/booking_provider.dart';
 import 'trip_tracking_screen.dart';
 
-// Module 1 - Searching. The radar screen while we wait for a driver. It watches
-// the live booking row; if a real driver accepts we go straight to Trip
-// Tracking, otherwise after a few seconds we start the simulation fallback.
 class SearchingScreen extends StatefulWidget {
   const SearchingScreen({super.key});
 
@@ -22,11 +19,6 @@ class SearchingScreen extends StatefulWidget {
 class _SearchingScreenState extends State<SearchingScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _spin;
-  // Shown after a while with no real driver, offering the simulation as
-  // something the passenger explicitly opts into - it must never fire on its
-  // own. It used to auto-trigger on a timer, which looked like a booking
-  // being "accepted" with no driver ever tapping Accept; now a real driver
-  // accepting is the only thing that can do that.
   bool _offerDemo = false;
   Timer? _offerTimer;
 

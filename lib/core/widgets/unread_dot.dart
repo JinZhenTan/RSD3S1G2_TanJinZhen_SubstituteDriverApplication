@@ -4,10 +4,6 @@ import '../../supabase_config.dart';
 import '../services/chat_read_service.dart';
 import '../theme/app_theme.dart';
 
-// A small red dot that appears next to a chat entry point once the other
-// side (driver <-> passenger) has sent a message since this account last
-// opened that thread. Renders nothing while unread status is still loading
-// or once there is nothing new, so it is safe to drop in anywhere.
 class UnreadDot extends StatefulWidget {
   const UnreadDot({
     super.key,
@@ -18,7 +14,7 @@ class UnreadDot extends StatefulWidget {
 
   final String? bookingId;
   final String? serviceRequestId;
-  final String mySenderType; // 'user' or 'driver'
+  final String mySenderType;
 
   @override
   State<UnreadDot> createState() => _UnreadDotState();

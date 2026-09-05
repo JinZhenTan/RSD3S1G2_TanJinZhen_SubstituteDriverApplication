@@ -4,10 +4,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/tr.dart';
 import '../../../models/forecast.dart';
 
-// Practical 10: a Bahasa Malaysia forecast phrase -> a weather condition image
-// file bundled in assets/images/. This is the practical's `weather_status` map,
-// kept verbatim (same keys, same filenames). Any phrase not in the map falls
-// through _imageFor()'s keyword check, then to unknown.png.
 const Map<String, String> _weatherStatus = {
   'Berjerebu': 'haze.png',
   'Tiada hujan': 'sunny.png',
@@ -24,15 +20,11 @@ const Map<String, String> _weatherStatus = {
   'Ribut petir di satu dua tempat di kawasan pedalaman': 'thunderstorm.png',
 };
 
-// Resolve a forecast phrase to an asset filename. Exact map first (Practical
-// 10), then a loose keyword match so unseen MET wordings still get an image,
-// then unknown.png.
 String _imageFor(String forecastText) {
   final exact = _weatherStatus[forecastText];
   if (exact != null) return exact;
 
   final t = forecastText.toLowerCase();
-  // "Tiada hujan" (no rain) contains "hujan", so check it before "hujan".
   if (t.contains('tiada hujan') || t.contains('no rain') || t.contains('cerah')) {
     return 'sunny.png';
   }
@@ -49,9 +41,6 @@ String _imageFor(String forecastText) {
   return 'unknown.png';
 }
 
-// Practical 10: a ListView.builder of Cards, one per forecast day. Each card is
-// a ListTile - leading day/month, title min/max temp, subtitle a row of the
-// morning / afternoon / night condition images.
 class ForecastList extends StatelessWidget {
   const ForecastList({super.key, required this.forecastData});
 
@@ -119,8 +108,6 @@ class ForecastList extends StatelessWidget {
   }
 }
 
-// One time-of-day column: label + the condition image (Practical 10 uses
-// Image.asset at 48x48, with unknown.png as the missing-asset fallback).
 class _Segment extends StatelessWidget {
   const _Segment({required this.label, required this.forecastText});
 

@@ -9,9 +9,6 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../models/car_service_request.dart';
 
-// Real CSV / PDF export of a service partner's completed-job earnings log -
-// same approach as the driver role's EarningsExporter, just for car-service
-// jobs instead of substitute-driver bookings.
 class StaffEarningsExporter {
   static final DateFormat _dateFormat = DateFormat('yyyy-MM-dd HH:mm');
   static final NumberFormat _money =

@@ -10,12 +10,6 @@ import '../../models/place.dart';
 import 'screen_header.dart';
 import 'tr.dart';
 
-// Reusable address-search screen (OSM Nominatim). Pushed for the pickup and
-// destination fields on Find a Driver and the manual-entry sub-flow of Car
-// Service. Pops the chosen `Place` back to the caller.
-//
-// Nominatim's usage policy asks for no more than ~1 request/second, so the
-// text field is debounced by 600ms before each search.
 class LocationSearchScreen extends StatefulWidget {
   const LocationSearchScreen({
     super.key,
@@ -26,8 +20,6 @@ class LocationSearchScreen extends StatefulWidget {
 
   final String title;
   final String eyebrow;
-  // Shows a "Use current location" row above the search results - only
-  // meaningful for a pickup field (a destination is somewhere else).
   final bool allowCurrentLocation;
 
   @override

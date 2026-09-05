@@ -20,8 +20,6 @@ import '../../weather_safety/providers/weather_provider.dart';
 import '../providers/booking_provider.dart';
 import 'confirm_pay_screen.dart';
 
-// Module 1 - Find a Driver. Service-tier chips, pickup/destination fields, an
-// OSM map with the trip route, and the live fare breakdown.
 class FindDriverScreen extends StatefulWidget {
   const FindDriverScreen({super.key});
 
@@ -36,10 +34,6 @@ class _FindDriverScreenState extends State<FindDriverScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _prime());
   }
 
-  // Only pre-fill the payment method / vehicle defaults - never the pickup
-  // or destination. The passenger always sets those two themselves (current
-  // location or search, via _pickLocation below), never a silently-chosen
-  // example address.
   Future<void> _prime() async {
     final booking = context.read<BookingProvider>();
     final acc = context.read<AccountProvider>();
@@ -49,10 +43,6 @@ class _FindDriverScreenState extends State<FindDriverScreen> {
     }
   }
 
-  // Always actionable, even with zero vehicles registered - a passenger
-  // shouldn't have to leave the booking flow and go to Profile just to add
-  // their first car. Same picker either way; "Add a vehicle" is always the
-  // last option.
   Future<void> _pickVehicle() async {
     final account = context.read<AccountProvider>();
     final booking = context.read<BookingProvider>();
@@ -317,9 +307,6 @@ class _TierChips extends StatelessWidget {
   }
 }
 
-// Explains what the currently-selected chip in _TierChips means. Swaps as the
-// passenger taps between tiers so the choice never needs a separate info
-// screen.
 class _TierDescription extends StatelessWidget {
   const _TierDescription({required this.tier});
 
@@ -350,10 +337,6 @@ class _TierDescription extends StatelessWidget {
   }
 }
 
-// Which of the passenger's (possibly several) cars the driver will drive -
-// required before paying (see the "Find my driver" button's onPressed).
-// Always tappable, even with zero vehicles registered: the picker itself
-// offers "Add a vehicle" inline, so there's no detour to Profile.
 class _VehicleRow extends StatelessWidget {
   const _VehicleRow({required this.vehicle, required this.onTap});
 
@@ -611,10 +594,6 @@ class _FareSummary extends StatelessWidget {
   }
 }
 
-// Same fixed set as the Payment methods screen: cash and an e-wallet are
-// always there, the card needs adding first. Watches AccountProvider (rather
-// than taking a snapshot) so adding a card from here updates the list live
-// instead of needing the sheet reopened.
 class _PaymentSheet extends StatelessWidget {
   const _PaymentSheet();
 
